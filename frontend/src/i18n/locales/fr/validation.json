@@ -1,0 +1,1 @@
+{ "required": "Ce champ est obligatoire", "invalidEmail": "Adresse e-mail invalide", "invalidDate": "Date invalide", "futureBirthDate": "La date de naissance ne peut pas être dans le futur", "minOneTest": "Au moins une analyse est requise" }

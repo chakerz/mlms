@@ -1,0 +1,82 @@
+{
+  "title": "كتالوج التحاليل",
+  "sections": {
+    "identity": "التعريف",
+    "catalogue": "معلومات ما قبل التحليل",
+    "technical": "المعاملات التقنية"
+  },
+  "bool": {
+    "yes": "نعم",
+    "no": "لا"
+  },
+  "fields": {
+    "code": "الرمز",
+    "name": "الاسم",
+    "nameFr": "الاسم (FR)",
+    "nameAr": "الاسم (AR)",
+    "category": "الفئة",
+    "unit": "الوحدة",
+    "referenceLow": "الحد الأدنى",
+    "referenceHigh": "الحد الأقصى",
+    "isActive": "نشط",
+    "referenceRange": "القيم المرجعية",
+    "minVolumeMl": "الحجم الأدنى (mL)",
+    "maxDelayMinutes": "التأخير الأقصى (دقيقة)",
+    "storageTemp": "درجة حرارة الحفظ",
+    "fastingRequired": "الصيام مطلوب",
+    "lightSensitive": "حساس للضوء",
+    "subcontracted": "مُستعان بمصدر خارجي",
+    "specialNotes": "ملاحظات خاصة",
+    "specialNotesFr": "ملاحظات خاصة (FR)",
+    "specialNotesAr": "ملاحظات خاصة (AR)",
+    "synonymes": "المرادفات",
+    "sampleType": "طبيعة العينة",
+    "tube": "الأنبوب",
+    "collectionCondition": "شرط الأخذ",
+    "sampleTypeFr": "طبيعة العينة (FR)",
+    "sampleTypeAr": "طبيعة العينة (AR)",
+    "tubeFr": "الأنبوب الموصى به (FR)",
+    "tubeAr": "الأنبوب الموصى به (AR)",
+    "method": "المنهجية",
+    "collectionConditionFr": "شرط الأخذ (FR)",
+    "collectionConditionAr": "شرط الأخذ (AR)",
+    "preAnalyticDelay": "التأخير قبل التحليل",
+    "turnaroundTime": "مدة الإنجاز"
+  },
+  "categories": {
+    "BIOCHEMISTRY": "الكيمياء الحيوية",
+    "HEMATOLOGY": "أمراض الدم",
+    "HEMOSTASIS": "التخثر",
+    "SEROLOGY": "علم الأمصال",
+    "IMMUNOLOGY": "علم المناعة",
+    "MICROBIOLOGY": "علم الأحياء الدقيقة",
+    "MOLECULAR_BIOLOGY": "البيولوجيا الجزيئية",
+    "CYTOGENETICS": "الوراثة الخلوية",
+    "HORMONOLOGY": "الهرمونات",
+    "ALLERGOLOGY": "الحساسية",
+    "TUMOR_MARKERS": "الواسمات الورمية",
+    "CATALOG": "الكتالوج"
+  },
+  "actions": {
+    "create": "تحليل جديد",
+    "edit": "تعديل التحليل",
+    "activate": "تفعيل",
+    "deactivate": "تعطيل"
+  },
+  "filters": {
+    "allCategories": "كل الفئات",
+    "search": "بحث بالرمز أو الاسم أو المرادف...",
+    "activeOnly": "النشطة فقط"
+  },
+  "status": {
+    "active": "نشط",
+    "inactive": "غير نشط"
+  },
+  "messages": {
+    "notFound": "التحليل غير موجود",
+    "created": "تم إنشاء التحليل بنجاح",
+    "updated": "تم تحديث التحليل",
+    "createError": "خطأ أثناء الإنشاء",
+    "updateError": "خطأ أثناء التحديث"
+  }
+}

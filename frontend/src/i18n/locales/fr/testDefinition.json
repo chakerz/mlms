@@ -1,0 +1,82 @@
+{
+  "title": "Catalogue des analyses",
+  "sections": {
+    "identity": "Identification",
+    "catalogue": "Informations pré-analytiques",
+    "technical": "Paramètres techniques"
+  },
+  "bool": {
+    "yes": "Oui",
+    "no": "Non"
+  },
+  "fields": {
+    "code": "Code",
+    "name": "Nom",
+    "nameFr": "Nom (FR)",
+    "nameAr": "Nom (AR)",
+    "category": "Catégorie",
+    "unit": "Unité",
+    "referenceLow": "Valeur min",
+    "referenceHigh": "Valeur max",
+    "isActive": "Actif",
+    "referenceRange": "Valeurs de référence",
+    "minVolumeMl": "Volume minimum (mL)",
+    "maxDelayMinutes": "Délai max (min)",
+    "storageTemp": "Température de conservation",
+    "fastingRequired": "À jeun requis",
+    "lightSensitive": "Sensible à la lumière",
+    "subcontracted": "Sous-traité",
+    "specialNotes": "Notes spéciales",
+    "specialNotesFr": "Notes spéciales (FR)",
+    "specialNotesAr": "Notes spéciales (AR)",
+    "synonymes": "Synonymes",
+    "sampleType": "Nature",
+    "tube": "Tube",
+    "collectionCondition": "Condition de prélèvement",
+    "sampleTypeFr": "Nature (FR)",
+    "sampleTypeAr": "Nature (AR)",
+    "tubeFr": "Tube recommandé (FR)",
+    "tubeAr": "Tube recommandé (AR)",
+    "method": "Méthode",
+    "collectionConditionFr": "Condition de prélèvement (FR)",
+    "collectionConditionAr": "Condition de prélèvement (AR)",
+    "preAnalyticDelay": "Délai pré-analytique",
+    "turnaroundTime": "Délai de rendu"
+  },
+  "categories": {
+    "BIOCHEMISTRY": "Biochimie",
+    "HEMATOLOGY": "Hématologie",
+    "HEMOSTASIS": "Hémostase",
+    "SEROLOGY": "Sérologie",
+    "IMMUNOLOGY": "Immunologie",
+    "MICROBIOLOGY": "Microbiologie",
+    "MOLECULAR_BIOLOGY": "Biologie moléculaire",
+    "CYTOGENETICS": "Cytogénétique",
+    "HORMONOLOGY": "Hormonologie",
+    "ALLERGOLOGY": "Allergologie",
+    "TUMOR_MARKERS": "Marqueurs tumoraux",
+    "CATALOG": "Catalogue"
+  },
+  "actions": {
+    "create": "Nouvelle analyse",
+    "edit": "Modifier l'analyse",
+    "activate": "Activer",
+    "deactivate": "Désactiver"
+  },
+  "filters": {
+    "allCategories": "Toutes les catégories",
+    "search": "Rechercher par code, nom ou synonyme...",
+    "activeOnly": "Actifs uniquement"
+  },
+  "status": {
+    "active": "Actif",
+    "inactive": "Inactif"
+  },
+  "messages": {
+    "notFound": "Analyse introuvable",
+    "created": "Analyse créée avec succès",
+    "updated": "Analyse mise à jour",
+    "createError": "Erreur lors de la création",
+    "updateError": "Erreur lors de la mise à jour"
+  }
+}

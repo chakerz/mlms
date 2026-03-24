@@ -1,0 +1,42 @@
+{
+  "title": "طلبات المختبر",
+  "createTitle": "إنشاء طلب",
+  "detailTitle": "تفاصيل الطلب",
+  "form": {
+    "patient": "المريض",
+    "patientSearch": "البحث بالاسم أو تاريخ الميلاد…",
+    "patientNotFound": "لا يوجد مريض",
+    "priority": "الأولوية",
+    "tests": "التحاليل",
+    "analysisCount": "{{count}} تحليل",
+    "notes": "ملاحظات",
+    "searchTest": "البحث عن تحليل...",
+    "noTests": "لا توجد تحاليل",
+    "selected": "محدد(ة)",
+    "prescriptorName": "الطبيب المحيل",
+    "prescriptorNamePlaceholder": "د. بنعلي",
+    "prescriptorType": "نوع الطبيب",
+    "frequentlyUsed": "الأكثر استخداماً",
+    "allCategories": "الكل",
+    "loading": "جارٍ تحميل الكتالوج..."
+  },
+  "priority": { "ROUTINE": "عادي", "URGENT": "مستعجل", "STAT": "فوري" },
+  "prescriptorType": {
+    "GENERALISTE": "طبيب عام",
+    "SPECIALISTE": "طبيب متخصص",
+    "URGENTISTE": "طبيب طوارئ",
+    "EXTERNE": "خارجي",
+    "AUTRE": "أخرى"
+  },
+  "actions": { "create": "إنشاء الطلب", "cancel": "إلغاء الطلب" },
+  "messages": {
+    "created": "تم إنشاء الطلب بنجاح",
+    "createError": "خطأ أثناء الإنشاء",
+    "notFound": "الطلب غير موجود",
+    "cancelConfirm": "هل أنت متأكد من إلغاء هذا الطلب؟"
+  },
+  "validation": {
+    "patientRequired": "معرّف المريض مطلوب",
+    "testsRequired": "يجب اختيار تحليل واحد على الأقل"
+  }
+}

@@ -1,0 +1,5 @@
+{
+  "order": { "PENDING": "قيد الانتظار", "COLLECTED": "تم أخذ العينة", "ANALYZED": "تم التحليل", "VALIDATED": "تم الاعتماد", "PUBLISHED": "تم النشر", "CANCELLED": "ملغى" },
+  "specimen": { "COLLECTED": "تم أخذ العينة", "RECEIVED": "تم الاستلام", "SENT": "تم الإرسال", "NON_CONFORMITE": "غير مطابق", "ACCEPTED": "مقبول", "PROCESSED": "تمت المعالجة", "DISPOSED": "تم التخلص", "REJECTED": "مرفوضة" },
+  "report": { "DRAFT": "مسودة", "VALIDATED": "معتمد", "FINAL": "نهائي", "CORRECTED": "مصَحَّح", "PUBLISHED": "منشور" }
+}

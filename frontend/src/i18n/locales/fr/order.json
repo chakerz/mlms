@@ -1,0 +1,42 @@
+{
+  "title": "Demandes de laboratoire",
+  "createTitle": "Créer une demande",
+  "detailTitle": "Détail de la demande",
+  "form": {
+    "patient": "Patient",
+    "patientSearch": "Rechercher par nom ou date de naissance…",
+    "patientNotFound": "Aucun patient trouvé",
+    "priority": "Priorité",
+    "tests": "Analyses",
+    "analysisCount": "{{count}} analyse(s)",
+    "notes": "Notes",
+    "searchTest": "Rechercher une analyse...",
+    "noTests": "Aucune analyse trouvée",
+    "selected": "sélectionnée(s)",
+    "prescriptorName": "Prescripteur",
+    "prescriptorNamePlaceholder": "Dr. Benali",
+    "prescriptorType": "Type de prescripteur",
+    "frequentlyUsed": "Utilisées fréquemment",
+    "allCategories": "Toutes",
+    "loading": "Chargement du catalogue..."
+  },
+  "priority": { "ROUTINE": "Routine", "URGENT": "Urgent", "STAT": "Stat" },
+  "prescriptorType": {
+    "GENERALISTE": "Médecin généraliste",
+    "SPECIALISTE": "Médecin spécialiste",
+    "URGENTISTE": "Urgentiste",
+    "EXTERNE": "Externe",
+    "AUTRE": "Autre"
+  },
+  "actions": { "create": "Créer la demande", "cancel": "Annuler la demande" },
+  "messages": {
+    "created": "Demande créée avec succès",
+    "createError": "Erreur lors de la création",
+    "notFound": "Commande introuvable",
+    "cancelConfirm": "Êtes-vous sûr de vouloir annuler cette demande ?"
+  },
+  "validation": {
+    "patientRequired": "L'identifiant du patient est requis",
+    "testsRequired": "Au moins une analyse est requise"
+  }
+}

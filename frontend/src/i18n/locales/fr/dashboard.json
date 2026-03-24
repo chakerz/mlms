@@ -1,0 +1,28 @@
+{
+  "title": "Tableau de bord",
+  "subtitle": "Vue d'ensemble de l'activité du laboratoire",
+  "greeting": {
+    "morning": "Bonjour",
+    "afternoon": "Bon après-midi",
+    "evening": "Bonsoir"
+  },
+  "cards": {
+    "patients": "Patients",
+    "orders": "Demandes",
+    "reportsPending": "Rapports en attente",
+    "lowStock": "Stock faible",
+    "specimens": "Échantillons",
+    "nonConformites": "Non-conformités"
+  },
+  "sections": {
+    "recentOrders": "Demandes récentes",
+    "quickActions": "Actions rapides",
+    "overview": "Aperçu"
+  },
+  "actions": {
+    "newPatient": "Nouveau patient",
+    "newOrder": "Nouvelle demande",
+    "viewReports": "Voir les rapports",
+    "checkStock": "Gérer le stock"
+  }
+}

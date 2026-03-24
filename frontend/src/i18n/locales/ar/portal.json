@@ -1,0 +1,13 @@
+{
+  "title": "بوابة المريض",
+  "myReports": "نتائجي",
+  "reportDetail": "تفاصيل التقرير",
+  "profile": "ملفي الشخصي",
+  "actions": {
+    "downloadPdf": "تنزيل PDF",
+    "viewReport": "عرض التقرير"
+  },
+  "messages": {
+    "noReports": "لا توجد تقارير متاحة"
+  }
+}

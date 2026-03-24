@@ -1,0 +1,60 @@
+{
+  "tests": {
+    "HGB": "Hémoglobine",
+    "WBC": "Globules blancs",
+    "RBC": "Globules rouges",
+    "PLT": "Plaquettes",
+    "GLU": "Glycémie",
+    "HBA1C": "Hémoglobine glyquée",
+    "CRE": "Créatinine",
+    "UREA": "Urée",
+    "UA": "Acide urique",
+    "CHOL": "Cholestérol total",
+    "TG": "Triglycérides",
+    "HDL": "Cholestérol HDL",
+    "LDL": "Cholestérol LDL",
+    "ALT": "Alanine aminotransférase (ALAT)",
+    "AST": "Aspartate aminotransférase (ASAT)",
+    "GGT": "Gamma-GT",
+    "ALP": "Phosphatase alcaline",
+    "BIL": "Bilirubine totale",
+    "ALB": "Albumine",
+    "TP": "Protéines totales",
+    "CRP": "Protéine C-réactive",
+    "TSH": "Thyréostimuline (TSH)",
+    "T4": "Thyroxine libre (T4L)",
+    "NA": "Sodium",
+    "K": "Potassium",
+    "CA": "Calcium",
+    "MG": "Magnésium",
+    "PHOS": "Phosphore"
+  },
+  "units": {
+    "g_dL": "g/dL",
+    "g_L": "g/L",
+    "mg_dL": "mg/dL",
+    "mg_L": "mg/L",
+    "mmol_L": "mmol/L",
+    "umol_L": "µmol/L",
+    "mEq_L": "mEq/L",
+    "IU_L": "UI/L",
+    "mIU_L": "mUI/L",
+    "percent": "%",
+    "x10_3_uL": "x10³/µL",
+    "x10_6_uL": "x10⁶/µL"
+  },
+  "flags": {
+    "N": "Normal",
+    "H": "Élevé",
+    "L": "Bas",
+    "HH": "Très élevé",
+    "LL": "Très bas",
+    "CRITICAL": "Critique"
+  },
+  "specimenTypes": {
+    "BLOOD": "Sang",
+    "URINE": "Urine",
+    "STOOL": "Selles",
+    "TISSUE": "Tissu"
+  }
+}

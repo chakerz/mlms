@@ -1,0 +1,432 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider     = "postgresql"
+  url          = env("DATABASE_URL")
+  relationMode = "foreignKeys"
+}
+
+enum Language {
+  FR
+  AR
+}
+
+enum UserRole {
+  RECEPTION
+  TECHNICIAN
+  BIOLOGISTE
+  PHYSICIAN
+  ADMIN
+}
+
+enum Gender {
+  M
+  F
+  O
+}
+
+enum OrderPriority {
+  ROUTINE
+  URGENT
+  STAT
+}
+
+enum TestOrderPriority {
+  ROUTINE
+  URGENT
+}
+
+enum OrderStatus {
+  PENDING
+  COLLECTED
+  ANALYZED
+  VALIDATED
+  PUBLISHED
+  CANCELLED
+}
+
+enum PrescriptorType {
+  GENERALISTE
+  SPECIALISTE
+  URGENTISTE
+  EXTERNE
+  AUTRE
+}
+
+enum SpecimenType {
+  WHOLE_BLOOD
+  SERUM
+  PLASMA
+  URINE
+  URINE_24H
+  STOOL
+  CSF
+  NASAL_SWAB
+  VAGINAL_SWAB
+  ENDOCERVICAL_SWAB
+  SPUTUM
+  AMNIOTIC_FLUID
+  BONE_MARROW
+  RESPIRATORY
+}
+
+enum ContainerType {
+  EDTA_TUBE
+  CITRATE_TUBE
+  DRY_TUBE
+  HEPARIN_TUBE
+}
+
+enum SpecimenStatus {
+  COLLECTED
+  SENT
+  RECEIVED
+  NON_CONFORMITE
+  ACCEPTED
+  PROCESSED
+  DISPOSED
+  REJECTED
+}
+
+enum ResultFlag {
+  N
+  H
+  L
+  HH
+  LL
+  CRITICAL
+}
+
+enum ReportStatus {
+  DRAFT
+  VALIDATED
+  FINAL
+  CORRECTED
+  PUBLISHED
+}
+
+enum ReagentCategory {
+  CHEMISTRY
+  HEMATOLOGY
+  IMMUNOLOGY
+  MICROBIOLOGY
+}
+
+enum NonConformiteReason {
+  ABSENCE_ORDONNANCE
+  PRESCRIPTION_ILLISIBLE
+  IDENTITE_ABSENTE
+  DISCORDANCE_IDENTITE
+  TUBE_INADEQUAT
+  TUBE_MANQUANT
+  VOLUME_INSUFFISANT
+  ECHANTILLON_COAGULE
+  ECHANTILLON_HEMOLYSE
+  PRESENCE_CAILLOTS
+  DELAI_DEPASSE
+  TEMPERATURE_NON_RESPECTEE
+  HEURE_PRELEVEMENT_MANQUANTE
+  CONSENTEMENT_MANQUANT
+  ECHANTILLON_ABSENT
+  AUTRE
+}
+
+enum ConformiteAction {
+  ACCEPTE
+  ACCEPTE_SOUS_RESERVE
+  REFUSE
+}
+
+model User {
+  id              String       @id @default(cuid())
+  email           String       @unique
+  passwordHash    String
+  role            UserRole
+  language        Language     @default(FR)
+  isActive        Boolean      @default(true)
+  createdAt       DateTime     @default(now())
+  updatedAt       DateTime     @updatedAt
+
+  createdOrders    Order[]           @relation("OrderCreatedBy")
+  measuredResults  Result[]          @relation("ResultMeasuredBy")
+  validatedReports Report[]          @relation("ReportValidatedBy")
+  signedReports    Report[]          @relation("ReportSignedBy")
+  auditEntries     AuditEntry[]      @relation("AuditActor")
+  nonConformites   NonConformite[]   @relation("NonConformiteRecordedBy")
+
+  @@index([role])
+  @@index([isActive])
+}
+
+model Patient {
+  id        String   @id @default(cuid())
+  firstName String
+  lastName  String
+  birthDate DateTime @db.Date
+  gender    Gender
+  phone     String?
+  email     String?
+  address   String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  orders    Order[]
+
+  @@index([lastName])
+  @@index([birthDate])
+  @@index([email])
+}
+
+model Order {
+  id               String           @id @default(cuid())
+  patientId        String
+  status           OrderStatus      @default(PENDING)
+  priority         OrderPriority
+  prescriptorName  String?
+  prescriptorType  PrescriptorType?
+  createdBy        String?
+  createdAt        DateTime         @default(now())
+  updatedAt        DateTime         @updatedAt
+
+  patient           Patient   @relation(fields: [patientId], references: [id], onDelete: Restrict, onUpdate: Cascade)
+  createdByUser     User?     @relation("OrderCreatedBy", fields: [createdBy], references: [id], onDelete: SetNull, onUpdate: Cascade)
+
+  tests             TestOrder[]
+  specimens         Specimen[]
+  reports           Report[]
+  nonConformites    NonConformite[]
+
+  @@index([patientId])
+  @@index([status])
+  @@index([priority])
+  @@index([createdBy])
+  @@index([createdAt])
+}
+
+model TestOrder {
+  id          String            @id @default(cuid())
+  orderId     String
+  testCode    String
+  testNameFr  String
+  testNameAr  String
+  priority    TestOrderPriority
+  notes       String?
+
+  order       Order             @relation(fields: [orderId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+
+  @@index([orderId])
+  @@index([testCode])
+  @@unique([orderId, testCode])
+}
+
+model Specimen {
+  id                  String         @id @default(cuid())
+  orderId             String
+  barcode             String         @unique
+  type                SpecimenType
+  containerType       ContainerType?
+  status              SpecimenStatus @default(COLLECTED)
+  collectionTime      DateTime
+  preleveur           String?
+  receivedAt          DateTime?
+  receivedBy          String?
+  sentAt              DateTime?
+  transportConditions String?
+  conservedUntil      DateTime?
+  conservationSite    String?
+  notes               String?
+  createdAt           DateTime       @default(now())
+  updatedAt           DateTime       @updatedAt
+
+  order          Order          @relation(fields: [orderId], references: [id], onDelete: Restrict, onUpdate: Cascade)
+  results        Result[]
+  nonConformites NonConformite[]
+
+  @@index([orderId])
+  @@index([status])
+  @@index([type])
+  @@index([collectionTime])
+}
+
+model NonConformite {
+  id          String              @id @default(cuid())
+  specimenId  String?
+  orderId     String?
+  reason      NonConformiteReason
+  details     String?
+  action      ConformiteAction
+  recordedBy  String?
+  createdAt   DateTime            @default(now())
+  updatedAt   DateTime            @updatedAt
+
+  specimen      Specimen? @relation(fields: [specimenId], references: [id], onDelete: SetNull, onUpdate: Cascade)
+  order         Order?    @relation(fields: [orderId], references: [id], onDelete: SetNull, onUpdate: Cascade)
+  recordedByUser User?   @relation("NonConformiteRecordedBy", fields: [recordedBy], references: [id], onDelete: SetNull, onUpdate: Cascade)
+
+  @@index([specimenId])
+  @@index([orderId])
+  @@index([reason])
+  @@index([action])
+  @@index([createdAt])
+}
+
+model Result {
+  id            String     @id @default(cuid())
+  specimenId    String
+  testCode      String
+  testNameFr    String
+  testNameAr    String
+  value         String
+  unit          String?
+  referenceLow  Float?
+  referenceHigh Float?
+  flag          ResultFlag
+  measuredAt    DateTime
+  measuredBy    String?
+  createdAt     DateTime   @default(now())
+  updatedAt     DateTime   @updatedAt
+
+  specimen       Specimen @relation(fields: [specimenId], references: [id], onDelete: Restrict, onUpdate: Cascade)
+  measuredByUser User?    @relation("ResultMeasuredBy", fields: [measuredBy], references: [id], onDelete: SetNull, onUpdate: Cascade)
+
+  @@index([specimenId])
+  @@index([testCode])
+  @@index([flag])
+  @@index([measuredAt])
+  @@index([measuredBy])
+  @@unique([specimenId, testCode])
+}
+
+model Report {
+  id              String       @id @default(cuid())
+  orderId         String
+  status          ReportStatus @default(DRAFT)
+  commentsFr      String?
+  commentsAr      String?
+  validatedBy     String?
+  validatedAt     DateTime?
+  signedBy        String?
+  signedAt        DateTime?
+  publishedAt     DateTime?
+  templateVersion String
+  createdAt       DateTime     @default(now())
+  updatedAt       DateTime     @updatedAt
+
+  order           Order @relation(fields: [orderId], references: [id], onDelete: Restrict, onUpdate: Cascade)
+  validatedByUser User? @relation("ReportValidatedBy", fields: [validatedBy], references: [id], onDelete: SetNull, onUpdate: Cascade)
+  signedByUser    User? @relation("ReportSignedBy", fields: [signedBy], references: [id], onDelete: SetNull, onUpdate: Cascade)
+
+  @@index([orderId])
+  @@index([status])
+  @@index([validatedBy])
+  @@index([signedBy])
+  @@index([publishedAt])
+}
+
+model Reagent {
+  id            String          @id @default(cuid())
+  name          String
+  manufacturer  String
+  catalogNumber String?
+  category      ReagentCategory
+  storageTemp   String?
+  createdAt     DateTime        @default(now())
+  updatedAt     DateTime        @updatedAt
+
+  lots ReagentLot[]
+
+  @@index([name])
+  @@index([manufacturer])
+  @@index([category])
+}
+
+model ReagentLot {
+  id              String   @id @default(cuid())
+  reagentId       String
+  lotNumber       String
+  expiryDate      DateTime @db.Date
+  initialQuantity Int
+  currentQuantity Int
+  isBlocked       Boolean  @default(false)
+  storageLocation String?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  reagent Reagent @relation(fields: [reagentId], references: [id], onDelete: Restrict, onUpdate: Cascade)
+
+  @@index([reagentId])
+  @@index([expiryDate])
+  @@index([isBlocked])
+  @@index([storageLocation])
+  @@unique([reagentId, lotNumber])
+}
+
+model StorageLocation {
+  id          String   @id @default(cuid())
+  code        String   @unique
+  name        String
+  description String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([name])
+}
+
+model AuditEntry {
+  id          String   @id @default(cuid())
+  actorUserId String?
+  action      String
+  entityType  String
+  entityId    String
+  beforeJson  Json?
+  afterJson   Json?
+  createdAt   DateTime @default(now())
+
+  actorUser User? @relation("AuditActor", fields: [actorUserId], references: [id], onDelete: SetNull, onUpdate: Cascade)
+
+  @@index([actorUserId])
+  @@index([entityType, entityId])
+  @@index([action])
+  @@index([createdAt])
+}
+
+model TestDefinition {
+  id                    String         @id @default(cuid())
+  code                  String         @unique
+  nameFr                String
+  nameAr                String
+  category              String
+  unit                  String?
+  referenceLow          Float?
+  referenceHigh         Float?
+  isActive              Boolean        @default(true)
+  tubeType              ContainerType?
+  minVolumeMl           Float?
+  fastingRequired       Boolean        @default(false)
+  lightSensitive        Boolean        @default(false)
+  maxDelayMinutes       Int?
+  storageTemp           String?
+  specialNotesFr        String?
+  specialNotesAr        String?
+  subcontracted         Boolean        @default(false)
+  // Catalogue bilingue
+  synonymes             String?
+  sampleTypeFr          String?
+  sampleTypeAr          String?
+  tubeFr                String?
+  tubeAr                String?
+  method                String?
+  collectionConditionFr String?
+  collectionConditionAr String?
+  preAnalyticDelay      String?
+  preAnalyticDelayAr    String?
+  turnaroundTime        String?
+  turnaroundTimeAr      String?
+  createdAt             DateTime       @default(now())
+  updatedAt             DateTime       @updatedAt
+
+  @@index([category])
+  @@index([isActive])
+}

@@ -1,0 +1,46 @@
+{
+  "title": "حالات عدم المطابقة",
+  "createTitle": "تسجيل حالة عدم مطابقة",
+  "form": {
+    "specimenId": "العينة",
+    "orderId": "الطلب",
+    "reason": "السبب",
+    "action": "القرار",
+    "details": "التفاصيل",
+    "detailsPlaceholder": "ملاحظات إضافية...",
+    "createdAt": "التاريخ"
+  },
+  "reason": {
+    "ABSENCE_ORDONNANCE": "غياب الوصفة الطبية",
+    "PRESCRIPTION_ILLISIBLE": "وصفة غير مقروءة",
+    "IDENTITE_ABSENTE": "هوية المريض غائبة",
+    "DISCORDANCE_IDENTITE": "تعارض في الهوية",
+    "TUBE_INADEQUAT": "أنبوب غير مناسب",
+    "TUBE_MANQUANT": "أنبوب مفقود",
+    "VOLUME_INSUFFISANT": "حجم غير كافٍ",
+    "ECHANTILLON_COAGULE": "عينة متخثرة",
+    "ECHANTILLON_HEMOLYSE": "عينة متحللة",
+    "PRESENCE_CAILLOTS": "وجود جلطات",
+    "DELAI_DEPASSE": "تجاوز المهلة الزمنية",
+    "TEMPERATURE_NON_RESPECTEE": "درجة حرارة غير ملائمة",
+    "HEURE_PRELEVEMENT_MANQUANTE": "وقت أخذ العينة مفقود",
+    "CONSENTEMENT_MANQUANT": "الموافقة غائبة",
+    "ECHANTILLON_ABSENT": "العينة غائبة",
+    "AUTRE": "أخرى"
+  },
+  "action": {
+    "ACCEPTE": "مقبول",
+    "ACCEPTE_SOUS_RESERVE": "مقبول مع تحفظ",
+    "REFUSE": "مرفوض"
+  },
+  "actions": {
+    "create": "تسجيل"
+  },
+  "validation": {
+    "specimenOrOrderRequired": "يجب تحديد عينة أو طلب"
+  },
+  "messages": {
+    "created": "تم تسجيل عدم المطابقة",
+    "createError": "خطأ أثناء التسجيل"
+  }
+}

@@ -1,0 +1,60 @@
+{
+  "title": "Réactifs",
+  "inventoryTitle": "Inventaire des réactifs",
+  "fields": {
+    "name": "Nom",
+    "manufacturer": "Fabricant",
+    "catalogNumber": "Numéro catalogue",
+    "category": "Catégorie",
+    "storageTemp": "Température de stockage",
+    "lotNumber": "Numéro de lot",
+    "expiryDate": "Date d'expiration",
+    "initialQuantity": "Quantité initiale",
+    "currentQuantity": "Quantité actuelle",
+    "storageLocation": "Emplacement de stockage",
+    "isBlocked": "Bloqué",
+    "quantity": "Quantité",
+    "testCode": "Code analyse"
+  },
+  "actions": {
+    "create": "Nouveau réactif",
+    "viewAll": "Voir tous les réactifs",
+    "receiveLot": "Réceptionner lot",
+    "consume": "Consommer",
+    "viewLots": "Voir les lots"
+  },
+  "stats": {
+    "totalReagents": "Réactifs totaux",
+    "activeCategories": "Catégories actives",
+    "manufacturers": "Fabricants",
+    "withTempRequired": "Avec température requise",
+    "byCategory": "Par catégorie"
+  },
+  "modal": {
+    "receiveLot": "Réceptionner un lot",
+    "consume": "Consommer un réactif"
+  },
+  "form": {
+    "lot": "Lot",
+    "selectLot": "-- Sélectionner --",
+    "qty": "qté",
+    "confirm": "Confirmer",
+    "saving": "Enregistrement...",
+    "consuming": "Consommation..."
+  },
+  "status": {
+    "available": "Disponible",
+    "blocked": "Bloqué",
+    "expired": "Expiré",
+    "lowStock": "Stock faible"
+  },
+  "messages": {
+    "created": "Réactif créé avec succès",
+    "lotReceived": "Lot enregistré avec succès",
+    "consumed": "Consommation enregistrée",
+    "lowStock": "Stock faible",
+    "expiredLot": "Lot expiré",
+    "lotReceiveError": "Erreur lors de l'enregistrement du lot.",
+    "consumeError": "Erreur lors de la consommation. Vérifiez que le lot est disponible."
+  }
+}

@@ -1,0 +1,43 @@
+{
+  "title": "النتائج",
+  "entryTitle": "إدخال النتائج",
+  "reviewTitle": "مراجعة النتائج",
+  "historyTitle": "سجل النتائج",
+  "fields": {
+    "value": "القيمة",
+    "unit": "الوحدة",
+    "flag": "المؤشر",
+    "referenceLow": "المرجع الأدنى",
+    "referenceHigh": "المرجع الأعلى",
+    "measuredAt": "تاريخ القياس",
+    "analysis": "التحليل",
+    "reference": "المرجع",
+    "specimen": "العينة"
+  },
+  "flags": {
+    "N": "طبيعي",
+    "H": "مرتفع",
+    "L": "منخفض",
+    "HH": "مرتفع جداً",
+    "LL": "منخفض جداً",
+    "CRITICAL": "حرج"
+  },
+  "actions": {
+    "new": "نتيجة جديدة",
+    "edit": "تعديل النتيجة",
+    "save": "حفظ التعديلات",
+    "record": "تسجيل النتيجة"
+  },
+  "messages": {
+    "notFound": "النتيجة غير موجودة",
+    "empty": "لا توجد نتائج",
+    "recordSuccess": "تم تسجيل النتيجة",
+    "updateSuccess": "تم تحديث النتيجة",
+    "criticalAlert": "تم اكتشاف قيمة (قيم) حرجة",
+    "loadError": "خطأ أثناء تحميل النتائج",
+    "recordError": "خطأ أثناء تسجيل النتيجة",
+    "updateError": "خطأ أثناء التحديث",
+    "specimenNotFound": "العينة غير موجودة",
+    "selectOrder": "اختر طلبًا للاطلاع على نتائج تحاليله."
+  }
+}

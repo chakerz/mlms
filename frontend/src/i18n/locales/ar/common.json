@@ -1,0 +1,42 @@
+{
+  "app": { "name": "نظام إدارة المختبر الطبي", "shortName": "MLMS" },
+  "language": { "fr": "الفرنسية", "ar": "العربية", "switch": "تغيير اللغة" },
+  "actions": {
+    "create": "إنشاء", "save": "حفظ", "cancel": "إلغاء", "edit": "تعديل",
+    "delete": "حذف", "search": "بحث", "close": "إغلاق", "back": "رجوع",
+    "continue": "متابعة", "validate": "اعتماد", "sign": "توقيع", "publish": "نشر",
+    "download": "تنزيل", "print": "طباعة", "refresh": "تحديث", "logout": "تسجيل الخروج",
+    "select": "— اختر —", "new": "جديد", "seeAll": "عرض الكل"
+  },
+  "labels": {
+    "yes": "نعم", "no": "لا", "email": "البريد الإلكتروني", "phone": "الهاتف",
+    "address": "العنوان", "status": "الحالة", "priority": "الأولوية",
+    "createdAt": "تاريخ الإنشاء", "updatedAt": "آخر تحديث", "actions": "الإجراءات"
+  },
+  "table": {
+    "columns": "الأعمدة",
+    "toggleColumns": "إظهار / إخفاء",
+    "rowsPerPage": "صفوف في الصفحة",
+    "pagination": "{from} - {to} من {count}"
+  },
+  "pagination": {
+    "showing": "{{from}} – {{to}} من {{total}}"
+  },
+  "states": { "loading": "جارٍ التحميل...", "empty": "لا توجد بيانات", "error": "حدث خطأ" },
+  "navigation": {
+    "dashboard": "لوحة التحكم", "patients": "المرضى", "orders": "الطلبات",
+    "specimens": "العينات", "results": "النتائج", "reports": "التقارير",
+    "reagents": "الكواشف", "inventory": "المخزون", "users": "المستخدمون",
+    "testDefinitions": "كتالوج التحاليل",
+    "nonConformites": "حالات عدم المطابقة",
+    "portal": "بوابة المريض", "logout": "تسجيل الخروج",
+    "groups": {
+      "preAnalytique": "ما قبل التحليل",
+      "analytique": "التحليل",
+      "postAnalytique": "ما بعد التحليل",
+      "stock": "المخزون والكواشف",
+      "administration": "الإدارة",
+      "portal": "البوابة"
+    }
+  }
+}

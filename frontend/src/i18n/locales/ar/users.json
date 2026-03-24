@@ -1,0 +1,30 @@
+{
+  "title": "المستخدمون",
+  "titleCreate": "مستخدم جديد",
+  "titleEdit": "تعديل المستخدم",
+  "roles": {
+    "RECEPTION": "الاستقبال",
+    "TECHNICIAN": "الفني",
+    "PHYSICIAN": "الطبيب البيولوجي",
+    "ADMIN": "المدير"
+  },
+  "form": {
+    "email": "البريد الإلكتروني",
+    "password": "كلمة المرور",
+    "role": "الدور",
+    "language": "اللغة",
+    "active": "نشط"
+  },
+  "actions": {
+    "create": "مستخدم جديد",
+    "deactivate": "تعطيل",
+    "activate": "تفعيل"
+  },
+  "messages": {
+    "createError": "خطأ أثناء إنشاء المستخدم",
+    "updateError": "خطأ أثناء تحديث المستخدم",
+    "notFound": "المستخدم غير موجود",
+    "selfDeactivate": "لا يمكن تعطيل حسابك الخاص",
+    "duplicate": "هذا البريد الإلكتروني مستخدم بالفعل"
+  }
+}

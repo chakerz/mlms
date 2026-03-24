@@ -1,0 +1,28 @@
+{
+  "title": "لوحة التحكم",
+  "subtitle": "نظرة عامة على نشاط المختبر",
+  "greeting": {
+    "morning": "صباح الخير",
+    "afternoon": "مساء الخير",
+    "evening": "مساء النور"
+  },
+  "cards": {
+    "patients": "المرضى",
+    "orders": "الطلبات",
+    "reportsPending": "التقارير المعلقة",
+    "lowStock": "مخزون منخفض",
+    "specimens": "العينات",
+    "nonConformites": "حالات عدم المطابقة"
+  },
+  "sections": {
+    "recentOrders": "الطلبات الأخيرة",
+    "quickActions": "إجراءات سريعة",
+    "overview": "نظرة عامة"
+  },
+  "actions": {
+    "newPatient": "مريض جديد",
+    "newOrder": "طلب جديد",
+    "viewReports": "عرض التقارير",
+    "checkStock": "إدارة المخزون"
+  }
+}

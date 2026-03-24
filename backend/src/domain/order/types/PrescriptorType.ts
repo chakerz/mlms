@@ -1,0 +1,7 @@
+export enum PrescriptorType {
+  GENERALISTE = 'GENERALISTE',
+  SPECIALISTE = 'SPECIALISTE',
+  URGENTISTE  = 'URGENTISTE',
+  EXTERNE     = 'EXTERNE',
+  AUTRE       = 'AUTRE',
+}

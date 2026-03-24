@@ -1,0 +1,50 @@
+{
+  "title": "العينات",
+  "createTitle": "تسجيل عينة",
+  "detailTitle": "تفاصيل العينة",
+  "form": {
+    "orderId": "الطلب (المعرّف)",
+    "barcode": "الباركود",
+    "barcodeAuto": "توليد تلقائي",
+    "type": "نوع العينة",
+    "containerType": "نوع الأنبوب",
+    "collectionTime": "تاريخ ووقت أخذ العينة",
+    "preleveur": "القائم بالأخذ",
+    "preleveurPlaceholder": "الممرض الكريمي",
+    "transportConditions": "ظروف النقل",
+    "transportConditionsPlaceholder": "درجة حرارة محيطية",
+    "conservationSite": "موقع التخزين",
+    "conservationSitePlaceholder": "ثلاجة المختبر أ",
+    "receivedAt": "تاريخ الاستلام",
+    "notes": "ملاحظات",
+    "orderRef": "الطلب"
+  },
+  "type": {
+    "WHOLE_BLOOD": "دم كامل",
+    "SERUM": "مصل",
+    "PLASMA": "بلازما",
+    "URINE": "بول",
+    "URINE_24H": "بول 24 ساعة",
+    "STOOL": "براز",
+    "CSF": "سائل دماغي شوكي",
+    "NASAL_SWAB": "مسحة أنفية / بلعومية أنفية",
+    "VAGINAL_SWAB": "مسحة مهبلية",
+    "ENDOCERVICAL_SWAB": "مسحة عنق الرحم",
+    "SPUTUM": "بلغم",
+    "AMNIOTIC_FLUID": "سائل أمنيوسي",
+    "BONE_MARROW": "نخاع",
+    "RESPIRATORY": "عينة تنفسية"
+  },
+  "containerType": {
+    "EDTA_TUBE": "أنبوب EDTA",
+    "CITRATE_TUBE": "أنبوب سترات",
+    "DRY_TUBE": "أنبوب جاف",
+    "HEPARIN_TUBE": "أنبوب هيبارين"
+  },
+  "actions": { "create": "تسجيل", "print": "طباعة الباركود", "reject": "رفض" },
+  "messages": {
+    "created": "تم تسجيل العينة بنجاح",
+    "createError": "خطأ أثناء التسجيل",
+    "notFound": "العينة غير موجودة"
+  }
+}

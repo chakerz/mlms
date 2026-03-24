@@ -1,0 +1,60 @@
+{
+  "title": "الكواشف",
+  "inventoryTitle": "مخزون الكواشف",
+  "fields": {
+    "name": "الاسم",
+    "manufacturer": "الشركة المصنعة",
+    "catalogNumber": "رقم المرجع",
+    "category": "الفئة",
+    "storageTemp": "درجة حرارة التخزين",
+    "lotNumber": "رقم التشغيلة",
+    "expiryDate": "تاريخ الانتهاء",
+    "initialQuantity": "الكمية الأصلية",
+    "currentQuantity": "الكمية الحالية",
+    "storageLocation": "مكان التخزين",
+    "isBlocked": "محجوب",
+    "quantity": "الكمية",
+    "testCode": "رمز الفحص"
+  },
+  "actions": {
+    "create": "كاشف جديد",
+    "viewAll": "عرض كل الكواشف",
+    "receiveLot": "استلام تشغيلة",
+    "consume": "استهلاك",
+    "viewLots": "عرض التشغيلات"
+  },
+  "stats": {
+    "totalReagents": "إجمالي الكواشف",
+    "activeCategories": "الفئات النشطة",
+    "manufacturers": "الشركات المصنعة",
+    "withTempRequired": "مع درجة حرارة مطلوبة",
+    "byCategory": "حسب الفئة"
+  },
+  "modal": {
+    "receiveLot": "استلام تشغيلة",
+    "consume": "استهلاك كاشف"
+  },
+  "form": {
+    "lot": "التشغيلة",
+    "selectLot": "-- اختر تشغيلة --",
+    "qty": "الكمية",
+    "confirm": "تأكيد",
+    "saving": "جارٍ الحفظ...",
+    "consuming": "جارٍ الاستهلاك..."
+  },
+  "status": {
+    "available": "متاح",
+    "blocked": "محجوب",
+    "expired": "منتهي الصلاحية",
+    "lowStock": "المخزون منخفض"
+  },
+  "messages": {
+    "created": "تم إنشاء الكاشف بنجاح",
+    "lotReceived": "تم تسجيل التشغيلة بنجاح",
+    "consumed": "تم تسجيل الاستهلاك",
+    "lowStock": "المخزون منخفض",
+    "expiredLot": "تشغيلة منتهية الصلاحية",
+    "lotReceiveError": "خطأ أثناء تسجيل التشغيلة.",
+    "consumeError": "خطأ أثناء الاستهلاك. تأكد من توفر التشغيلة."
+  }
+}

@@ -1,0 +1,46 @@
+{
+  "title": "Non-conformités",
+  "createTitle": "Signaler une non-conformité",
+  "form": {
+    "specimenId": "Échantillon",
+    "orderId": "Demande",
+    "reason": "Motif",
+    "action": "Décision",
+    "details": "Détails",
+    "detailsPlaceholder": "Observations complémentaires…",
+    "createdAt": "Date"
+  },
+  "reason": {
+    "ABSENCE_ORDONNANCE": "Absence d'ordonnance",
+    "PRESCRIPTION_ILLISIBLE": "Prescription illisible",
+    "IDENTITE_ABSENTE": "Identité absente",
+    "DISCORDANCE_IDENTITE": "Discordance d'identité",
+    "TUBE_INADEQUAT": "Tube inadéquat",
+    "TUBE_MANQUANT": "Tube manquant",
+    "VOLUME_INSUFFISANT": "Volume insuffisant",
+    "ECHANTILLON_COAGULE": "Échantillon coagulé",
+    "ECHANTILLON_HEMOLYSE": "Échantillon hémolysé",
+    "PRESENCE_CAILLOTS": "Présence de caillots",
+    "DELAI_DEPASSE": "Délai dépassé",
+    "TEMPERATURE_NON_RESPECTEE": "Température non respectée",
+    "HEURE_PRELEVEMENT_MANQUANTE": "Heure de prélèvement manquante",
+    "CONSENTEMENT_MANQUANT": "Consentement manquant",
+    "ECHANTILLON_ABSENT": "Échantillon absent",
+    "AUTRE": "Autre"
+  },
+  "action": {
+    "ACCEPTE": "Accepté",
+    "ACCEPTE_SOUS_RESERVE": "Accepté sous réserve",
+    "REFUSE": "Refusé"
+  },
+  "actions": {
+    "create": "Signaler"
+  },
+  "validation": {
+    "specimenOrOrderRequired": "Un échantillon ou une demande est requis"
+  },
+  "messages": {
+    "created": "Non-conformité enregistrée",
+    "createError": "Erreur lors de l'enregistrement"
+  }
+}

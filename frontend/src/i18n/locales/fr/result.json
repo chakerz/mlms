@@ -1,0 +1,43 @@
+{
+  "title": "Résultats",
+  "entryTitle": "Saisie des résultats",
+  "reviewTitle": "Revue des résultats",
+  "historyTitle": "Historique des résultats",
+  "fields": {
+    "value": "Valeur",
+    "unit": "Unité",
+    "flag": "Indicateur",
+    "referenceLow": "Référence basse",
+    "referenceHigh": "Référence haute",
+    "measuredAt": "Mesuré le",
+    "analysis": "Analyse",
+    "reference": "Référence",
+    "specimen": "Échantillon"
+  },
+  "flags": {
+    "N": "Normal",
+    "H": "Élevé",
+    "L": "Bas",
+    "HH": "Très élevé",
+    "LL": "Très bas",
+    "CRITICAL": "Critique"
+  },
+  "actions": {
+    "new": "Nouveau résultat",
+    "edit": "Modifier le résultat",
+    "save": "Enregistrer les modifications",
+    "record": "Enregistrer le résultat"
+  },
+  "messages": {
+    "notFound": "Résultat introuvable",
+    "empty": "Aucun résultat",
+    "recordSuccess": "Résultat enregistré",
+    "updateSuccess": "Résultat mis à jour",
+    "criticalAlert": "Valeur(s) critique(s) détectée(s)",
+    "loadError": "Erreur lors du chargement des résultats",
+    "recordError": "Erreur lors de l'enregistrement du résultat",
+    "updateError": "Erreur lors de la mise à jour",
+    "specimenNotFound": "Échantillon introuvable",
+    "selectOrder": "Sélectionnez une commande pour accéder aux résultats de ses analyses."
+  }
+}

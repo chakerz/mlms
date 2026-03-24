@@ -1,0 +1,42 @@
+{
+  "app": { "name": "Système de Gestion de Laboratoire Médical", "shortName": "MLMS" },
+  "language": { "fr": "Français", "ar": "Arabe", "switch": "Changer la langue" },
+  "actions": {
+    "create": "Créer", "save": "Enregistrer", "cancel": "Annuler", "edit": "Modifier",
+    "delete": "Supprimer", "search": "Rechercher", "close": "Fermer", "back": "Retour",
+    "continue": "Continuer", "validate": "Valider", "sign": "Signer", "publish": "Publier",
+    "download": "Télécharger", "print": "Imprimer", "refresh": "Actualiser", "logout": "Déconnexion",
+    "select": "— Sélectionner —", "new": "Nouveau", "seeAll": "Voir tout"
+  },
+  "labels": {
+    "yes": "Oui", "no": "Non", "email": "E-mail", "phone": "Téléphone",
+    "address": "Adresse", "status": "Statut", "priority": "Priorité",
+    "createdAt": "Créé le", "updatedAt": "Mis à jour le", "actions": "Actions"
+  },
+  "table": {
+    "columns": "Colonnes",
+    "toggleColumns": "Afficher / Masquer",
+    "rowsPerPage": "Lignes par page",
+    "pagination": "{from} - {to} sur {count}"
+  },
+  "pagination": {
+    "showing": "{{from}} – {{to}} sur {{total}}"
+  },
+  "states": { "loading": "Chargement...", "empty": "Aucune donnée disponible", "error": "Une erreur est survenue" },
+  "navigation": {
+    "dashboard": "Tableau de bord", "patients": "Patients", "orders": "Demandes",
+    "specimens": "Échantillons", "results": "Résultats", "reports": "Rapports",
+    "reagents": "Réactifs", "inventory": "Inventaire", "users": "Utilisateurs",
+    "testDefinitions": "Catalogue analyses",
+    "nonConformites": "Non-conformités",
+    "portal": "Portail patient", "logout": "Déconnexion",
+    "groups": {
+      "preAnalytique": "Pré-analytique",
+      "analytique": "Analytique",
+      "postAnalytique": "Post-analytique",
+      "stock": "Stock & Réactifs",
+      "administration": "Administration",
+      "portal": "Portail"
+    }
+  }
+}

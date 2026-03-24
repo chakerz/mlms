@@ -1,0 +1,5 @@
+{
+  "order": { "PENDING": "En attente", "COLLECTED": "Prélevé", "ANALYZED": "Analysé", "VALIDATED": "Validé", "PUBLISHED": "Publié", "CANCELLED": "Annulé" },
+  "specimen": { "COLLECTED": "Prélevé", "RECEIVED": "Reçu", "SENT": "Envoyé", "NON_CONFORMITE": "Non conforme", "ACCEPTED": "Accepté", "PROCESSED": "Traité", "DISPOSED": "Éliminé", "REJECTED": "Rejeté" },
+  "report": { "DRAFT": "Brouillon", "VALIDATED": "Validé", "FINAL": "Final", "CORRECTED": "Corrigé", "PUBLISHED": "Publié" }
+}

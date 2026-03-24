@@ -36,6 +36,7 @@ Die Dokumente sollen in dieser Reihenfolge gelesen werden:
 10. `12-OPENAPI.md`
 11. `09-MVP-CHECKLIST.md`
 12. `10-CLAUDE-PROMPTS.md`
+13. `13-DEMANDE-ECHANTILLON-ANALYSE.md`
 
 ---
 
@@ -284,6 +285,28 @@ Lesen als:
 
 ---
 
+## 13 – Demande – Échantillon – Analyse
+
+**Datei:** `13-DEMANDE-ECHANTILLON-ANALYSE.md`
+
+Beschreibt:
+- fachliche Beziehung zwischen Demande, Échantillon und Analyse
+- Grundregeln und Beispiele (NFS, sérologies, ECBU/PCR)
+- Workflow-Ablauf Schritt für Schritt (FR + AR)
+- Statuslogik für Échantillon
+- MVP-Modell vs. erweiterbare Zielstruktur
+- Regeln für Änderungen und Dokumentationspflicht
+
+Abhängigkeiten:
+- baut auf `04-DOMAIN-MODEL.md` und `11-PRISMA-SCHEMA.md` auf
+- muss bei Änderungen an Status, Formularen oder Ergebnislogik mitgepflegt werden
+
+Lesen als:
+- fachliche Kernreferenz für den Laborworkflow
+- Pflichtlektüre vor jeder Änderung an Order, Specimen oder Result
+
+---
+
 ## Abhängigkeitslogik
 
 Die Dokumente hängen fachlich so zusammen:
@@ -377,6 +400,7 @@ Folgende Konsistenz muss immer erhalten bleiben:
 - `04-DOMAIN-MODEL.md` ↔ `11-PRISMA-SCHEMA.md`
 - `05-API-CONTRACTS.md` ↔ `12-OPENAPI.md`
 - `08-MEDICAL-TERMS.md` ↔ `06-I18N.md`
+- `13-DEMANDE-ECHANTILLON-ANALYSE.md` ↔ `04-DOMAIN-MODEL.md` ↔ `11-PRISMA-SCHEMA.md`
 - `09-MVP-CHECKLIST.md` ↔ alle MVP-relevanten Grundlagendokumente
 - `10-CLAUDE-PROMPTS.md` ↔ alle Dokumente, die Claude Code lesen soll
 

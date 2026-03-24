@@ -1,0 +1,6 @@
+export enum ContainerType {
+  EDTA_TUBE = 'EDTA_TUBE',
+  CITRATE_TUBE = 'CITRATE_TUBE',
+  DRY_TUBE = 'DRY_TUBE',
+  HEPARIN_TUBE = 'HEPARIN_TUBE',
+}

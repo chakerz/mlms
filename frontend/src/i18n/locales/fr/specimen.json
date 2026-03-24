@@ -1,0 +1,50 @@
+{
+  "title": "Échantillons",
+  "createTitle": "Enregistrer un échantillon",
+  "detailTitle": "Détail de l'échantillon",
+  "form": {
+    "orderId": "Commande (ID)",
+    "barcode": "Code-barres",
+    "barcodeAuto": "Générer automatiquement",
+    "type": "Type d'échantillon",
+    "containerType": "Type de contenant",
+    "collectionTime": "Date/heure de prélèvement",
+    "preleveur": "Préleveur",
+    "preleveurPlaceholder": "IDE Karimi",
+    "transportConditions": "Conditions de transport",
+    "transportConditionsPlaceholder": "Température ambiante",
+    "conservationSite": "Site de conservation",
+    "conservationSitePlaceholder": "Réfrigérateur labo A",
+    "receivedAt": "Reçu le",
+    "notes": "Notes",
+    "orderRef": "Commande"
+  },
+  "type": {
+    "WHOLE_BLOOD": "Sang total",
+    "SERUM": "Sérum",
+    "PLASMA": "Plasma",
+    "URINE": "Urines",
+    "URINE_24H": "Urines de 24h",
+    "STOOL": "Selles",
+    "CSF": "LCR (liquide céphalo-rachidien)",
+    "NASAL_SWAB": "Écouvillon nasal / nasopharyngé",
+    "VAGINAL_SWAB": "Écouvillon vaginal",
+    "ENDOCERVICAL_SWAB": "Écouvillon endocervical",
+    "SPUTUM": "Crachats",
+    "AMNIOTIC_FLUID": "Liquide amniotique",
+    "BONE_MARROW": "Moelle",
+    "RESPIRATORY": "Prélèvement respiratoire"
+  },
+  "containerType": {
+    "EDTA_TUBE": "Tube EDTA",
+    "CITRATE_TUBE": "Tube citrate",
+    "DRY_TUBE": "Tube sec",
+    "HEPARIN_TUBE": "Tube héparine"
+  },
+  "actions": { "create": "Enregistrer", "print": "Imprimer le code-barres", "reject": "Rejeter" },
+  "messages": {
+    "created": "Échantillon enregistré avec succès",
+    "createError": "Erreur lors de l'enregistrement",
+    "notFound": "Échantillon introuvable"
+  }
+}

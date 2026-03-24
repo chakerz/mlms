@@ -1,0 +1,1938 @@
+openapi: 3.0.3
+
+info:
+  title: MLMS API
+  version: 1.0.0
+  description: |
+    Medical Laboratory Management System API.
+
+    Supports the complete laboratory workflow:
+    - Patient registration
+    - Order creation
+    - Specimen collection
+    - Result entry
+    - Report validation and publication
+    - Patient portal access
+
+    All protected endpoints require a Bearer JWT token obtained via `POST /auth/login`.
+
+servers:
+  - url: http://localhost:3000/api
+    description: Local development server
+
+tags:
+  - name: Auth
+    description: Authentication and current user
+  - name: Patients
+    description: Patient management
+  - name: Orders
+    description: Laboratory order management
+  - name: Specimens
+    description: Specimen collection and tracking
+  - name: Results
+    description: Laboratory result entry
+  - name: Reports
+    description: Report generation, validation and publication
+  - name: Reagents
+    description: Reagent and lot inventory management
+  - name: Portal
+    description: Patient portal – published reports only
+  - name: Audit
+    description: Audit trail for critical actions
+
+security:
+  - bearerAuth: []
+
+# ─────────────────────────────────────────────────────────────────────────────
+# PATHS
+# ─────────────────────────────────────────────────────────────────────────────
+
+paths:
+
+  # ── Auth ──────────────────────────────────────────────────────────────────
+
+  /auth/login:
+    post:
+      tags: [Auth]
+      summary: Login
+      description: Authenticate a user and receive a JWT access token.
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LoginDto'
+            example:
+              email: physician@mlms.local
+              password: Doctor1234!
+      responses:
+        '200':
+          description: Login successful
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LoginResponseDto'
+              example:
+                accessToken: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.example
+                user:
+                  id: clxyz001
+                  email: physician@mlms.local
+                  role: PHYSICIAN
+                  language: FR
+                  isActive: true
+                  createdAt: '2026-03-01T08:00:00.000Z'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '422':
+          $ref: '#/components/responses/ValidationError'
+
+  /auth/register:
+    post:
+      tags: [Auth]
+      summary: Register a new internal user
+      description: Create a new user account. Requires ADMIN role.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RegisterUserDto'
+            example:
+              email: technician2@mlms.local
+              password: Tech1234!
+              role: TECHNICIAN
+              language: FR
+      responses:
+        '201':
+          description: User created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CurrentUserDto'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '403':
+          $ref: '#/components/responses/ForbiddenError'
+        '409':
+          $ref: '#/components/responses/ConflictError'
+        '422':
+          $ref: '#/components/responses/ValidationError'
+
+  /auth/me:
+    get:
+      tags: [Auth]
+      summary: Get current authenticated user
+      responses:
+        '200':
+          description: Current user
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CurrentUserDto'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+
+  # ── Patients ───────────────────────────────────────────────────────────────
+
+  /patients:
+    post:
+      tags: [Patients]
+      summary: Register a new patient
+      description: Requires RECEPTION or ADMIN role.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreatePatientRequestDto'
+            example:
+              firstName: Amina
+              lastName: El Idrissi
+              birthDate: '1992-05-12T00:00:00.000Z'
+              gender: F
+              phone: '+212600000001'
+              email: amina@example.com
+              address: Casablanca, Maroc
+      responses:
+        '201':
+          description: Patient created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PatientDto'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '403':
+          $ref: '#/components/responses/ForbiddenError'
+        '422':
+          $ref: '#/components/responses/ValidationError'
+
+    get:
+      tags: [Patients]
+      summary: List patients
+      parameters:
+        - $ref: '#/components/parameters/PageParam'
+        - $ref: '#/components/parameters/PageSizeParam'
+        - in: query
+          name: query
+          schema:
+            type: string
+          description: Search by name or email
+      responses:
+        '200':
+          description: Paginated patient list
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/PatientDto'
+                  meta:
+                    $ref: '#/components/schemas/ApiListMeta'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+
+  /patients/{id}:
+    get:
+      tags: [Patients]
+      summary: Get patient by ID
+      parameters:
+        - $ref: '#/components/parameters/IdParam'
+      responses:
+        '200':
+          description: Patient found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PatientDto'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '404':
+          $ref: '#/components/responses/NotFoundError'
+
+    patch:
+      tags: [Patients]
+      summary: Update patient
+      parameters:
+        - $ref: '#/components/parameters/IdParam'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdatePatientRequestDto'
+      responses:
+        '200':
+          description: Patient updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PatientDto'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '403':
+          $ref: '#/components/responses/ForbiddenError'
+        '404':
+          $ref: '#/components/responses/NotFoundError'
+        '422':
+          $ref: '#/components/responses/ValidationError'
+
+  # ── Orders ─────────────────────────────────────────────────────────────────
+
+  /orders:
+    post:
+      tags: [Orders]
+      summary: Create a new order
+      description: Requires RECEPTION or ADMIN role. Order starts with status PENDING.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateOrderRequestDto'
+            example:
+              patientId: clxyz001
+              priority: ROUTINE
+              tests:
+                - testCode: GLU
+                  testNameFr: Glycémie
+                  testNameAr: سكر الدم
+                  priority: ROUTINE
+                - testCode: HGB
+                  testNameFr: Hémoglobine
+                  testNameAr: الهيموغلوبين
+                  priority: ROUTINE
+      responses:
+        '201':
+          description: Order created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OrderDto'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '403':
+          $ref: '#/components/responses/ForbiddenError'
+        '404':
+          description: Patient not found
+          $ref: '#/components/responses/NotFoundError'
+        '422':
+          $ref: '#/components/responses/ValidationError'
+
+    get:
+      tags: [Orders]
+      summary: List orders
+      parameters:
+        - $ref: '#/components/parameters/PageParam'
+        - $ref: '#/components/parameters/PageSizeParam'
+        - in: query
+          name: patientId
+          schema:
+            type: string
+        - in: query
+          name: status
+          schema:
+            $ref: '#/components/schemas/OrderStatus'
+        - in: query
+          name: priority
+          schema:
+            $ref: '#/components/schemas/OrderPriority'
+      responses:
+        '200':
+          description: Paginated order list
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/OrderDto'
+                  meta:
+                    $ref: '#/components/schemas/ApiListMeta'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+
+  /orders/{id}:
+    get:
+      tags: [Orders]
+      summary: Get order by ID
+      parameters:
+        - $ref: '#/components/parameters/IdParam'
+      responses:
+        '200':
+          description: Order found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OrderDto'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '404':
+          $ref: '#/components/responses/NotFoundError'
+
+  /orders/{id}/status:
+    patch:
+      tags: [Orders]
+      summary: Update order status
+      parameters:
+        - $ref: '#/components/parameters/IdParam'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateOrderStatusRequestDto'
+            example:
+              status: COLLECTED
+      responses:
+        '200':
+          description: Status updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OrderDto'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '403':
+          $ref: '#/components/responses/ForbiddenError'
+        '404':
+          $ref: '#/components/responses/NotFoundError'
+        '422':
+          $ref: '#/components/responses/ValidationError'
+
+  /orders/{id}/cancel:
+    patch:
+      tags: [Orders]
+      summary: Cancel an order
+      description: Cancels an order in PENDING, COLLECTED, or ANALYZED status. Requires RECEPTION or ADMIN role.
+      parameters:
+        - $ref: '#/components/parameters/IdParam'
+      responses:
+        '200':
+          description: Order cancelled
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OrderDto'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '403':
+          $ref: '#/components/responses/ForbiddenError'
+        '404':
+          $ref: '#/components/responses/NotFoundError'
+        '422':
+          $ref: '#/components/responses/ValidationError'
+
+  /orders/{id}/results:
+    get:
+      tags: [Results]
+      summary: Get all results for an order
+      parameters:
+        - $ref: '#/components/parameters/IdParam'
+      responses:
+        '200':
+          description: Results for order
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ResultDto'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '404':
+          $ref: '#/components/responses/NotFoundError'
+
+  /orders/{id}/specimens:
+    get:
+      tags: [Specimens]
+      summary: Get all specimens for an order
+      parameters:
+        - $ref: '#/components/parameters/IdParam'
+      responses:
+        '200':
+          description: Specimens for order
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/SpecimenDto'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '404':
+          $ref: '#/components/responses/NotFoundError'
+
+  # ── Specimens ──────────────────────────────────────────────────────────────
+
+  /specimens:
+    post:
+      tags: [Specimens]
+      summary: Register a specimen
+      description: Requires TECHNICIAN or ADMIN role.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateSpecimenRequestDto'
+            example:
+              orderId: clxyz002
+              barcode: LAB-2026-00001
+              type: BLOOD
+              collectionTime: '2026-03-16T09:00:00.000Z'
+              notes: null
+      responses:
+        '201':
+          description: Specimen created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SpecimenDto'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '403':
+          $ref: '#/components/responses/ForbiddenError'
+        '409':
+          description: Barcode already exists
+          $ref: '#/components/responses/ConflictError'
+        '422':
+          $ref: '#/components/responses/ValidationError'
+
+  /specimens/{id}:
+    get:
+      tags: [Specimens]
+      summary: Get specimen by ID
+      parameters:
+        - $ref: '#/components/parameters/IdParam'
+      responses:
+        '200':
+          description: Specimen found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SpecimenDto'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '404':
+          $ref: '#/components/responses/NotFoundError'
+
+  /specimens/{id}/status:
+    patch:
+      tags: [Specimens]
+      summary: Update specimen status
+      parameters:
+        - $ref: '#/components/parameters/IdParam'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateSpecimenStatusRequestDto'
+            example:
+              status: RECEIVED
+              receivedAt: '2026-03-16T09:15:00.000Z'
+      responses:
+        '200':
+          description: Status updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SpecimenDto'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '403':
+          $ref: '#/components/responses/ForbiddenError'
+        '404':
+          $ref: '#/components/responses/NotFoundError'
+        '422':
+          $ref: '#/components/responses/ValidationError'
+
+  /specimens/{id}/results:
+    get:
+      tags: [Results]
+      summary: Get all results for a specimen
+      parameters:
+        - $ref: '#/components/parameters/IdParam'
+      responses:
+        '200':
+          description: Results for specimen
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ResultDto'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '404':
+          $ref: '#/components/responses/NotFoundError'
+
+  # ── Results ────────────────────────────────────────────────────────────────
+
+  /results:
+    post:
+      tags: [Results]
+      summary: Record a laboratory result
+      description: Requires TECHNICIAN or ADMIN role.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RecordResultRequestDto'
+            example:
+              specimenId: clxyz003
+              testCode: GLU
+              testNameFr: Glycémie
+              testNameAr: سكر الدم
+              value: '7.2'
+              unit: mmol/L
+              referenceLow: 3.9
+              referenceHigh: 6.1
+              flag: H
+              measuredAt: '2026-03-16T10:00:00.000Z'
+      responses:
+        '201':
+          description: Result recorded
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResultDto'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '403':
+          $ref: '#/components/responses/ForbiddenError'
+        '409':
+          description: Result for this testCode already exists on this specimen
+          $ref: '#/components/responses/ConflictError'
+        '422':
+          $ref: '#/components/responses/ValidationError'
+
+  /results/{id}:
+    patch:
+      tags: [Results]
+      summary: Update a result
+      description: Requires TECHNICIAN or ADMIN role.
+      parameters:
+        - $ref: '#/components/parameters/IdParam'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateResultRequestDto'
+      responses:
+        '200':
+          description: Result updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResultDto'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '403':
+          $ref: '#/components/responses/ForbiddenError'
+        '404':
+          $ref: '#/components/responses/NotFoundError'
+        '422':
+          $ref: '#/components/responses/ValidationError'
+
+  # ── Reports ────────────────────────────────────────────────────────────────
+
+  /reports/generate:
+    post:
+      tags: [Reports]
+      summary: Generate a report from an order
+      description: |
+        Creates a DRAFT report for the given order.
+        The order must have at least one result.
+        Requires PHYSICIAN or ADMIN role.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/GenerateReportRequestDto'
+            example:
+              orderId: clxyz002
+              templateVersion: v1
+      responses:
+        '201':
+          description: Report generated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ReportDto'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '403':
+          $ref: '#/components/responses/ForbiddenError'
+        '404':
+          $ref: '#/components/responses/NotFoundError'
+        '422':
+          $ref: '#/components/responses/ValidationError'
+
+  /reports:
+    get:
+      tags: [Reports]
+      summary: List reports
+      parameters:
+        - $ref: '#/components/parameters/PageParam'
+        - $ref: '#/components/parameters/PageSizeParam'
+        - in: query
+          name: status
+          schema:
+            $ref: '#/components/schemas/ReportStatus'
+        - in: query
+          name: orderId
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Paginated report list
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/ReportDto'
+                  meta:
+                    $ref: '#/components/schemas/ApiListMeta'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+
+  /reports/{id}:
+    get:
+      tags: [Reports]
+      summary: Get report by ID
+      description: Returns report with embedded patient, order and results.
+      parameters:
+        - $ref: '#/components/parameters/IdParam'
+      responses:
+        '200':
+          description: Report found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ReportDetailDto'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '404':
+          $ref: '#/components/responses/NotFoundError'
+
+  /reports/{id}/validate:
+    post:
+      tags: [Reports]
+      summary: Validate a report
+      description: |
+        Moves report from DRAFT to VALIDATED.
+        Requires PHYSICIAN role.
+        Report must have results.
+      parameters:
+        - $ref: '#/components/parameters/IdParam'
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ValidateReportRequestDto'
+            example:
+              commentsFr: Valeurs dans les limites normales sauf glycémie légèrement élevée.
+              commentsAr: القيم في الحدود الطبيعية باستثناء ارتفاع طفيف في السكر.
+      responses:
+        '200':
+          description: Report validated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ReportDto'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '403':
+          $ref: '#/components/responses/ForbiddenError'
+        '404':
+          $ref: '#/components/responses/NotFoundError'
+        '422':
+          $ref: '#/components/responses/ValidationError'
+
+  /reports/{id}/sign:
+    post:
+      tags: [Reports]
+      summary: Sign and finalize a report
+      description: |
+        Moves report from VALIDATED to FINAL.
+        Requires PHYSICIAN role.
+        Report must be in VALIDATED state.
+      parameters:
+        - $ref: '#/components/parameters/IdParam'
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SignReportRequestDto'
+      responses:
+        '200':
+          description: Report signed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ReportDto'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '403':
+          $ref: '#/components/responses/ForbiddenError'
+        '404':
+          $ref: '#/components/responses/NotFoundError'
+        '422':
+          $ref: '#/components/responses/ValidationError'
+
+  /reports/{id}/publish:
+    post:
+      tags: [Reports]
+      summary: Publish a report
+      description: |
+        Moves report from FINAL to PUBLISHED.
+        Makes the report visible in the patient portal.
+        Requires PHYSICIAN or ADMIN role.
+        Report must be in FINAL state.
+      parameters:
+        - $ref: '#/components/parameters/IdParam'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PublishReportRequestDto'
+            example:
+              publishToPortal: true
+      responses:
+        '200':
+          description: Report published
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ReportDto'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '403':
+          $ref: '#/components/responses/ForbiddenError'
+        '404':
+          $ref: '#/components/responses/NotFoundError'
+        '422':
+          $ref: '#/components/responses/ValidationError'
+
+  # ── Reagents ───────────────────────────────────────────────────────────────
+
+  /reagents:
+    post:
+      tags: [Reagents]
+      summary: Create a reagent
+      description: Requires ADMIN role.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateReagentRequestDto'
+            example:
+              name: Réactif Glucose
+              manufacturer: DiaSys
+              catalogNumber: DS-GLU-002
+              category: CHEMISTRY
+              storageTemp: '+2°C à +8°C'
+      responses:
+        '201':
+          description: Reagent created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ReagentDto'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '403':
+          $ref: '#/components/responses/ForbiddenError'
+        '422':
+          $ref: '#/components/responses/ValidationError'
+
+    get:
+      tags: [Reagents]
+      summary: List reagents
+      parameters:
+        - $ref: '#/components/parameters/PageParam'
+        - $ref: '#/components/parameters/PageSizeParam'
+        - in: query
+          name: category
+          schema:
+            $ref: '#/components/schemas/ReagentCategory'
+      responses:
+        '200':
+          description: Reagent list
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/ReagentDto'
+                  meta:
+                    $ref: '#/components/schemas/ApiListMeta'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+
+  /reagents/lots:
+    post:
+      tags: [Reagents]
+      summary: Receive a new reagent lot
+      description: Requires ADMIN role.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ReceiveReagentLotRequestDto'
+            example:
+              reagentId: clxyz010
+              lotNumber: LOT-2026-001
+              expiryDate: '2027-06-30T00:00:00.000Z'
+              initialQuantity: 100
+              currentQuantity: 100
+              storageLocation: FRIDGE-1
+      responses:
+        '201':
+          description: Lot received
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ReagentLotDto'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '403':
+          $ref: '#/components/responses/ForbiddenError'
+        '409':
+          description: Lot number already exists for this reagent
+          $ref: '#/components/responses/ConflictError'
+        '422':
+          $ref: '#/components/responses/ValidationError'
+
+  /reagents/{id}/lots:
+    get:
+      tags: [Reagents]
+      summary: List lots for a reagent
+      parameters:
+        - $ref: '#/components/parameters/IdParam'
+      responses:
+        '200':
+          description: Lot list
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ReagentLotDto'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '404':
+          $ref: '#/components/responses/NotFoundError'
+
+  /reagents/consume:
+    post:
+      tags: [Reagents]
+      summary: Consume reagent from a lot
+      description: |
+        Books a consumption against a lot.
+        Lot must not be blocked or expired.
+        currentQuantity must not go below 0.
+        Requires TECHNICIAN or ADMIN role.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ConsumeReagentRequestDto'
+            example:
+              lotId: clxyz011
+              quantity: 5
+              testCode: GLU
+      responses:
+        '200':
+          description: Consumption recorded
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ReagentLotDto'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '403':
+          $ref: '#/components/responses/ForbiddenError'
+        '404':
+          $ref: '#/components/responses/NotFoundError'
+        '422':
+          $ref: '#/components/responses/ValidationError'
+
+  # ── Portal ─────────────────────────────────────────────────────────────────
+
+  /portal/me:
+    get:
+      tags: [Portal]
+      summary: Get patient profile for the authenticated patient user
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Patient profile
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PatientDto'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '404':
+          $ref: '#/components/responses/NotFoundError'
+
+  /portal/reports:
+    get:
+      tags: [Portal]
+      summary: Get published reports for the authenticated patient
+      description: |
+        Returns only PUBLISHED reports belonging to the authenticated patient.
+        Patient must be authenticated with PATIENT role JWT.
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: page
+          in: query
+          required: false
+          schema:
+            type: integer
+            default: 1
+        - name: pageSize
+          in: query
+          required: false
+          schema:
+            type: integer
+            default: 20
+      responses:
+        '200':
+          description: Paginated published report list
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/ReportDto'
+                  meta:
+                    $ref: '#/components/schemas/PaginationMeta'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+
+  /portal/reports/{id}:
+    get:
+      tags: [Portal]
+      summary: Get a single published report
+      description: Patient can only access their own published reports.
+      security:
+        - BearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/IdParam'
+      responses:
+        '200':
+          description: Report detail
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PatientPortalReportDto'
+              example:
+                id: clxyz020
+                orderId: clxyz002
+                status: PUBLISHED
+                publishedAt: '2026-03-16T14:00:00.000Z'
+                patient:
+                  id: clxyz001
+                  firstName: Amina
+                  lastName: El Idrissi
+                  birthDate: '1992-05-12T00:00:00.000Z'
+                  gender: F
+                  phone: '+212600000001'
+                  email: amina@example.com
+                  address: Casablanca, Maroc
+                results:
+                  - testCode: GLU
+                    testNameFr: Glycémie
+                    testNameAr: سكر الدم
+                    value: '7.2'
+                    unit: mmol/L
+                    flag: H
+                    referenceLow: 3.9
+                    referenceHigh: 6.1
+                    measuredAt: '2026-03-16T10:00:00.000Z'
+                commentsFr: Glycémie légèrement élevée.
+                commentsAr: ارتفاع طفيف في السكر.
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '403':
+          $ref: '#/components/responses/ForbiddenError'
+        '404':
+          $ref: '#/components/responses/NotFoundError'
+
+# ─────────────────────────────────────────────────────────────────────────────
+# COMPONENTS
+# ─────────────────────────────────────────────────────────────────────────────
+
+components:
+
+  # ── Security ────────────────────────────────────────────────────────────────
+
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  # ── Parameters ──────────────────────────────────────────────────────────────
+
+  parameters:
+    IdParam:
+      in: path
+      name: id
+      required: true
+      schema:
+        type: string
+      description: Resource ID (cuid)
+
+    PageParam:
+      in: query
+      name: page
+      schema:
+        type: integer
+        minimum: 1
+        default: 1
+      description: Page number
+
+    PageSizeParam:
+      in: query
+      name: pageSize
+      schema:
+        type: integer
+        minimum: 1
+        maximum: 100
+        default: 20
+      description: Items per page
+
+  # ── Responses ───────────────────────────────────────────────────────────────
+
+  responses:
+    UnauthorizedError:
+      description: Authentication required
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ApiErrorEnvelope'
+          example:
+            error:
+              code: UNAUTHORIZED
+              message: Authentication required
+
+    ForbiddenError:
+      description: Insufficient permissions
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ApiErrorEnvelope'
+          example:
+            error:
+              code: FORBIDDEN
+              message: Access denied
+
+    NotFoundError:
+      description: Resource not found
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ApiErrorEnvelope'
+          example:
+            error:
+              code: NOT_FOUND
+              message: Resource not found
+
+    ConflictError:
+      description: Conflict – resource already exists
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ApiErrorEnvelope'
+          example:
+            error:
+              code: CONFLICT
+              message: Resource already exists
+
+    ValidationError:
+      description: Validation failed
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ApiErrorEnvelope'
+          example:
+            error:
+              code: VALIDATION_ERROR
+              message: Validation failed
+              details:
+                - field: firstName
+                  message: firstName is required
+
+  # ── Schemas ─────────────────────────────────────────────────────────────────
+
+  schemas:
+
+    # ── Enums ──────────────────────────────────────────────────────────────
+
+    Language:
+      type: string
+      enum: [FR, AR]
+
+    UserRole:
+      type: string
+      enum: [RECEPTION, TECHNICIAN, PHYSICIAN, ADMIN]
+
+    Gender:
+      type: string
+      enum: [M, F, O]
+
+    OrderPriority:
+      type: string
+      enum: [ROUTINE, URGENT, STAT]
+
+    OrderStatus:
+      type: string
+      enum: [PENDING, COLLECTED, ANALYZED, VALIDATED, PUBLISHED, CANCELLED]
+
+    SpecimenType:
+      type: string
+      enum: [BLOOD, URINE, STOOL, TISSUE]
+
+    SpecimenStatus:
+      type: string
+      enum: [COLLECTED, RECEIVED, PROCESSED, DISPOSED, REJECTED]
+
+    ResultFlag:
+      type: string
+      enum: [N, H, L, HH, LL, CRITICAL]
+
+    ReportStatus:
+      type: string
+      enum: [DRAFT, VALIDATED, FINAL, CORRECTED, PUBLISHED]
+
+    ReagentCategory:
+      type: string
+      enum: [CHEMISTRY, HEMATOLOGY, IMMUNOLOGY, MICROBIOLOGY]
+
+    # ── Error Models ───────────────────────────────────────────────────────
+
+    ApiFieldError:
+      type: object
+      required: [field, message]
+      properties:
+        field:
+          type: string
+          example: firstName
+        message:
+          type: string
+          example: firstName is required
+
+    ApiError:
+      type: object
+      required: [code, message]
+      properties:
+        code:
+          type: string
+          example: VALIDATION_ERROR
+        message:
+          type: string
+          example: Validation failed
+        details:
+          type: array
+          items:
+            $ref: '#/components/schemas/ApiFieldError'
+
+    ApiErrorEnvelope:
+      type: object
+      required: [error]
+      properties:
+        error:
+          $ref: '#/components/schemas/ApiError'
+
+    # ── Pagination ─────────────────────────────────────────────────────────
+
+    ApiListMeta:
+      type: object
+      required: [page, pageSize, total, totalPages]
+      properties:
+        page:
+          type: integer
+          example: 1
+        pageSize:
+          type: integer
+          example: 20
+        total:
+          type: integer
+          example: 120
+        totalPages:
+          type: integer
+          example: 6
+
+    # ── Auth ───────────────────────────────────────────────────────────────
+
+    LoginDto:
+      type: object
+      required: [email, password]
+      properties:
+        email:
+          type: string
+          format: email
+          example: physician@mlms.local
+        password:
+          type: string
+          format: password
+          example: secret123
+
+    RegisterUserDto:
+      type: object
+      required: [email, password, role]
+      properties:
+        email:
+          type: string
+          format: email
+        password:
+          type: string
+          format: password
+        role:
+          $ref: '#/components/schemas/UserRole'
+        language:
+          $ref: '#/components/schemas/Language'
+
+    CurrentUserDto:
+      type: object
+      required: [id, email, role, language, isActive, createdAt]
+      properties:
+        id:
+          type: string
+          example: clxyz001
+        email:
+          type: string
+          format: email
+          example: physician@mlms.local
+        role:
+          $ref: '#/components/schemas/UserRole'
+        language:
+          $ref: '#/components/schemas/Language'
+        isActive:
+          type: boolean
+          example: true
+        createdAt:
+          type: string
+          format: date-time
+          example: '2026-03-01T08:00:00.000Z'
+
+    LoginResponseDto:
+      type: object
+      required: [accessToken, user]
+      properties:
+        accessToken:
+          type: string
+          example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.example
+        user:
+          $ref: '#/components/schemas/CurrentUserDto'
+
+    # ── Patient ────────────────────────────────────────────────────────────
+
+    PatientDto:
+      type: object
+      required: [id, firstName, lastName, birthDate, gender, createdAt, updatedAt]
+      properties:
+        id:
+          type: string
+          example: clxyz001
+        firstName:
+          type: string
+          example: Amina
+        lastName:
+          type: string
+          example: El Idrissi
+        birthDate:
+          type: string
+          format: date-time
+          example: '1992-05-12T00:00:00.000Z'
+        gender:
+          $ref: '#/components/schemas/Gender'
+        phone:
+          type: string
+          nullable: true
+          example: '+212600000001'
+        email:
+          type: string
+          format: email
+          nullable: true
+          example: amina@example.com
+        address:
+          type: string
+          nullable: true
+          example: Casablanca, Maroc
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+
+    CreatePatientRequestDto:
+      type: object
+      required: [firstName, lastName, birthDate, gender]
+      properties:
+        firstName:
+          type: string
+        lastName:
+          type: string
+        birthDate:
+          type: string
+          format: date-time
+        gender:
+          $ref: '#/components/schemas/Gender'
+        phone:
+          type: string
+          nullable: true
+        email:
+          type: string
+          format: email
+          nullable: true
+        address:
+          type: string
+          nullable: true
+
+    UpdatePatientRequestDto:
+      type: object
+      properties:
+        firstName:
+          type: string
+        lastName:
+          type: string
+        birthDate:
+          type: string
+          format: date-time
+        gender:
+          $ref: '#/components/schemas/Gender'
+        phone:
+          type: string
+          nullable: true
+        email:
+          type: string
+          format: email
+          nullable: true
+        address:
+          type: string
+          nullable: true
+
+    # ── Order ──────────────────────────────────────────────────────────────
+
+    TestOrderItemDto:
+      type: object
+      required: [id, orderId, testCode, testNameFr, testNameAr, priority]
+      properties:
+        id:
+          type: string
+        orderId:
+          type: string
+        testCode:
+          type: string
+          example: GLU
+        testNameFr:
+          type: string
+          example: "Glycémie"
+        testNameAr:
+          type: string
+          example: "سكر الدم"
+        priority:
+          type: string
+          enum: [ROUTINE, URGENT]
+        notes:
+          type: string
+          nullable: true
+
+    OrderDto:
+      type: object
+      required: [id, patientId, status, priority, createdAt, updatedAt, tests]
+      properties:
+        id:
+          type: string
+        patientId:
+          type: string
+        status:
+          $ref: '#/components/schemas/OrderStatus'
+        priority:
+          $ref: '#/components/schemas/OrderPriority'
+        createdBy:
+          type: string
+          nullable: true
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+        tests:
+          type: array
+          items:
+            $ref: '#/components/schemas/TestOrderItemDto'
+
+    CreateOrderRequestDto:
+      type: object
+      required: [patientId, priority, tests]
+      properties:
+        patientId:
+          type: string
+        priority:
+          $ref: '#/components/schemas/OrderPriority'
+        tests:
+          type: array
+          minItems: 1
+          items:
+            type: object
+            required: [testCode, testNameFr, testNameAr, priority]
+            properties:
+              testCode:
+                type: string
+                example: GLU
+              testNameFr:
+                type: string
+                example: "Glycémie"
+              testNameAr:
+                type: string
+                example: "سكر الدم"
+              priority:
+                type: string
+                enum: [ROUTINE, URGENT]
+              notes:
+                type: string
+                nullable: true
+
+    UpdateOrderStatusRequestDto:
+      type: object
+      required: [status]
+      properties:
+        status:
+          $ref: '#/components/schemas/OrderStatus'
+
+    # ── Specimen ───────────────────────────────────────────────────────────
+
+    SpecimenDto:
+      type: object
+      required: [id, orderId, barcode, type, status, collectionTime, createdAt, updatedAt]
+      properties:
+        id:
+          type: string
+        orderId:
+          type: string
+        barcode:
+          type: string
+          example: LAB-2026-00001
+        type:
+          $ref: '#/components/schemas/SpecimenType'
+        status:
+          $ref: '#/components/schemas/SpecimenStatus'
+        collectionTime:
+          type: string
+          format: date-time
+        receivedAt:
+          type: string
+          format: date-time
+          nullable: true
+        notes:
+          type: string
+          nullable: true
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+
+    CreateSpecimenRequestDto:
+      type: object
+      required: [orderId, barcode, type, collectionTime]
+      properties:
+        orderId:
+          type: string
+        barcode:
+          type: string
+        type:
+          $ref: '#/components/schemas/SpecimenType'
+        collectionTime:
+          type: string
+          format: date-time
+        notes:
+          type: string
+          nullable: true
+
+    UpdateSpecimenStatusRequestDto:
+      type: object
+      required: [status]
+      properties:
+        status:
+          $ref: '#/components/schemas/SpecimenStatus'
+        receivedAt:
+          type: string
+          format: date-time
+          nullable: true
+
+    # ── Result ─────────────────────────────────────────────────────────────
+
+    ResultDto:
+      type: object
+      required: [id, specimenId, testCode, testNameFr, testNameAr, value, flag, measuredAt, createdAt, updatedAt]
+      properties:
+        id:
+          type: string
+        specimenId:
+          type: string
+        testCode:
+          type: string
+          example: GLU
+        testNameFr:
+          type: string
+          example: "Glycémie"
+        testNameAr:
+          type: string
+          example: "سكر الدم"
+        value:
+          type: string
+          example: '7.2'
+        unit:
+          type: string
+          nullable: true
+          example: mmol/L
+        referenceLow:
+          type: number
+          nullable: true
+          example: 3.9
+        referenceHigh:
+          type: number
+          nullable: true
+          example: 6.1
+        flag:
+          $ref: '#/components/schemas/ResultFlag'
+        measuredAt:
+          type: string
+          format: date-time
+        measuredBy:
+          type: string
+          nullable: true
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+
+    RecordResultRequestDto:
+      type: object
+      required: [specimenId, testCode, testNameFr, testNameAr, value, flag, measuredAt]
+      properties:
+        specimenId:
+          type: string
+        testCode:
+          type: string
+        testNameFr:
+          type: string
+        testNameAr:
+          type: string
+        value:
+          type: string
+        unit:
+          type: string
+          nullable: true
+        referenceLow:
+          type: number
+          nullable: true
+        referenceHigh:
+          type: number
+          nullable: true
+        flag:
+          $ref: '#/components/schemas/ResultFlag'
+        measuredAt:
+          type: string
+          format: date-time
+
+    UpdateResultRequestDto:
+      type: object
+      properties:
+        value:
+          type: string
+        unit:
+          type: string
+          nullable: true
+        referenceLow:
+          type: number
+          nullable: true
+        referenceHigh:
+          type: number
+          nullable: true
+        flag:
+          $ref: '#/components/schemas/ResultFlag'
+        measuredAt:
+          type: string
+          format: date-time
+
+    # ── Report ─────────────────────────────────────────────────────────────
+
+    ReportDto:
+      type: object
+      required: [id, orderId, status, templateVersion, createdAt, updatedAt]
+      properties:
+        id:
+          type: string
+        orderId:
+          type: string
+        status:
+          $ref: '#/components/schemas/ReportStatus'
+        commentsFr:
+          type: string
+          nullable: true
+        commentsAr:
+          type: string
+          nullable: true
+        validatedBy:
+          type: string
+          nullable: true
+        validatedAt:
+          type: string
+          format: date-time
+          nullable: true
+        signedBy:
+          type: string
+          nullable: true
+        signedAt:
+          type: string
+          format: date-time
+          nullable: true
+        publishedAt:
+          type: string
+          format: date-time
+          nullable: true
+        templateVersion:
+          type: string
+          example: v1
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+
+    ReportDetailDto:
+      type: object
+      required: [report, patient, order, results]
+      properties:
+        report:
+          $ref: '#/components/schemas/ReportDto'
+        patient:
+          $ref: '#/components/schemas/PatientDto'
+        order:
+          $ref: '#/components/schemas/OrderDto'
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/ResultDto'
+
+    GenerateReportRequestDto:
+      type: object
+      required: [orderId]
+      properties:
+        orderId:
+          type: string
+        templateVersion:
+          type: string
+          example: v1
+
+    ValidateReportRequestDto:
+      type: object
+      properties:
+        commentsFr:
+          type: string
+          nullable: true
+        commentsAr:
+          type: string
+          nullable: true
+
+    SignReportRequestDto:
+      type: object
+      properties:
+        commentsFr:
+          type: string
+          nullable: true
+        commentsAr:
+          type: string
+          nullable: true
+
+    PublishReportRequestDto:
+      type: object
+      required: [publishToPortal]
+      properties:
+        publishToPortal:
+          type: boolean
+
+    # ── Reagent ────────────────────────────────────────────────────────────
+
+    ReagentDto:
+      type: object
+      required: [id, name, manufacturer, category, createdAt, updatedAt]
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        manufacturer:
+          type: string
+        catalogNumber:
+          type: string
+          nullable: true
+        category:
+          $ref: '#/components/schemas/ReagentCategory'
+        storageTemp:
+          type: string
+          nullable: true
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+
+    ReagentLotDto:
+      type: object
+      required: [id, reagentId, lotNumber, expiryDate, initialQuantity, currentQuantity, isBlocked, isExpired, createdAt, updatedAt]
+      properties:
+        id:
+          type: string
+        reagentId:
+          type: string
+        lotNumber:
+          type: string
+        expiryDate:
+          type: string
+          format: date-time
+        initialQuantity:
+          type: integer
+        currentQuantity:
+          type: integer
+        isBlocked:
+          type: boolean
+        isExpired:
+          type: boolean
+        storageLocation:
+          type: string
+          nullable: true
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+
+    CreateReagentRequestDto:
+      type: object
+      required: [name, manufacturer, category]
+      properties:
+        name:
+          type: string
+        manufacturer:
+          type: string
+        catalogNumber:
+          type: string
+          nullable: true
+        category:
+          $ref: '#/components/schemas/ReagentCategory'
+        storageTemp:
+          type: string
+          nullable: true
+
+    ReceiveReagentLotRequestDto:
+      type: object
+      required: [reagentId, lotNumber, expiryDate, initialQuantity]
+      properties:
+        reagentId:
+          type: string
+        lotNumber:
+          type: string
+        expiryDate:
+          type: string
+          format: date-time
+        initialQuantity:
+          type: integer
+        currentQuantity:
+          type: integer
+        storageLocation:
+          type: string
+          nullable: true
+
+    ConsumeReagentRequestDto:
+      type: object
+      required: [lotId, quantity, testCode]
+      properties:
+        lotId:
+          type: string
+          description: ID of the ReagentLot to consume from
+        quantity:
+          type: integer
+          minimum: 1
+        testCode:
+          type: string
+          description: Test code for which the reagent is consumed
+
+    # ── Portal ─────────────────────────────────────────────────────────────
+
+    PatientPortalReportDto:
+      type: object
+      required: [id, orderId, status]
+      properties:
+        id:
+          type: string
+        orderId:
+          type: string
+        status:
+          $ref: '#/components/schemas/ReportStatus'
+        publishedAt:
+          type: string
+          format: date-time
+          nullable: true
+        patient:
+          type: object
+          required: [id, firstName, lastName, birthDate]
+          properties:
+            id:
+              type: string
+            firstName:
+              type: string
+            lastName:
+              type: string
+            birthDate:
+              type: string
+              format: date-time
+            gender:
+              $ref: '#/components/schemas/Gender'
+            phone:
+              type: string
+              nullable: true
+            email:
+              type: string
+              nullable: true
+            address:
+              type: string
+              nullable: true
+        results:
+          type: array
+          items:
+            type: object
+            required: [testCode, testNameFr, testNameAr, value, flag]
+            properties:
+              testCode:
+                type: string
+              testNameFr:
+                type: string
+              testNameAr:
+                type: string
+              value:
+                type: string
+              unit:
+                type: string
+                nullable: true
+              flag:
+                $ref: '#/components/schemas/ResultFlag'
+              referenceLow:
+                type: number
+                nullable: true
+              referenceHigh:
+                type: number
+                nullable: true
+              measuredAt:
+                type: string
+                format: date-time
+        commentsFr:
+          type: string
+          nullable: true
+        commentsAr:
+          type: string
+          nullable: true

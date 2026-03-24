@@ -1,0 +1,13 @@
+{
+  "title": "Portail patient",
+  "myReports": "Mes résultats",
+  "reportDetail": "Détail du rapport",
+  "profile": "Mon profil",
+  "actions": {
+    "downloadPdf": "Télécharger le PDF",
+    "viewReport": "Voir le rapport"
+  },
+  "messages": {
+    "noReports": "Aucun rapport disponible"
+  }
+}

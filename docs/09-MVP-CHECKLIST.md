@@ -73,16 +73,16 @@ Folgende Module müssen im MVP enthalten sein:
 ## Phase 0 – Projektbasis
 
 ## Pflicht
-- [ ] Monorepo-Struktur vorhanden
-- [ ] `backend/` vorhanden
-- [ ] `frontend/` vorhanden
-- [ ] `contracts/` vorhanden
-- [ ] `docs/` vorhanden
-- [ ] `.env.example` vorhanden
-- [ ] `docker-compose.yml` vorhanden
-- [ ] `Makefile` vorhanden
-- [ ] Git Repository initialisiert
-- [ ] `.gitignore` vorhanden
+- [x] Monorepo-Struktur vorhanden
+- [x] `backend/` vorhanden
+- [x] `frontend/` vorhanden
+- [x] `contracts/` vorhanden
+- [x] `docs/` vorhanden
+- [x] `.env.example` vorhanden
+- [x] `docker-compose.yml` vorhanden
+- [x] `Makefile` vorhanden
+- [x] Git Repository initialisiert
+- [x] `.gitignore` vorhanden
 
 ## Erfolgskriterium
 Projekt kann lokal sauber gestartet werden.
@@ -110,17 +110,17 @@ Lokale Entwicklungsumgebung funktioniert ohne manuelle Sondertricks.
 ## Phase 2 – Contracts & Grundstruktur
 
 ## Pflicht
-- [ ] `contracts/` Package angelegt
-- [ ] Common DTOs vorhanden
-- [ ] Auth DTOs vorhanden
-- [ ] Patient DTOs vorhanden
-- [ ] Order DTOs vorhanden
-- [ ] Specimen DTOs vorhanden
-- [ ] Result DTOs vorhanden
-- [ ] Report DTOs vorhanden
-- [ ] Reagent DTOs vorhanden
-- [ ] Portal DTOs vorhanden
-- [ ] alle `index.ts` Exporte vorhanden
+- [x] `contracts/` Package angelegt
+- [x] Common DTOs vorhanden
+- [x] Auth DTOs vorhanden
+- [x] Patient DTOs vorhanden
+- [x] Order DTOs vorhanden
+- [x] Specimen DTOs vorhanden
+- [x] Result DTOs vorhanden
+- [x] Report DTOs vorhanden
+- [x] Reagent DTOs vorhanden
+- [x] Portal DTOs vorhanden
+- [x] alle `index.ts` Exporte vorhanden
 
 ## Erfolgskriterium
 Frontend und Backend können gemeinsame Typen importieren.
@@ -130,29 +130,29 @@ Frontend und Backend können gemeinsame Typen importieren.
 ## Phase 3 – Prisma Schema & Persistenzmodell
 
 ## Pflicht
-- [ ] `backend/prisma/schema.prisma` vorhanden
-- [ ] PostgreSQL Provider konfiguriert
-- [ ] alle Kern-Enums vorhanden
-- [ ] User Modell vorhanden
-- [ ] Patient Modell vorhanden
-- [ ] Order Modell vorhanden
-- [ ] TestOrder Modell vorhanden
-- [ ] Specimen Modell vorhanden
-- [ ] Result Modell vorhanden
-- [ ] Report Modell vorhanden
-- [ ] Reagent Modell vorhanden
-- [ ] ReagentLot Modell vorhanden
-- [ ] StorageLocation Modell vorhanden
-- [ ] AuditEntry Modell vorhanden
-- [ ] TestDefinition Modell vorhanden
-- [ ] Relationen korrekt gesetzt
-- [ ] Unique Constraints korrekt gesetzt
-- [ ] wichtige Indizes gesetzt
-- [ ] `prisma format` läuft
-- [ ] `prisma validate` läuft
+- [x] `backend/prisma/schema.prisma` vorhanden
+- [x] PostgreSQL Provider konfiguriert
+- [x] alle Kern-Enums vorhanden
+- [x] User Modell vorhanden
+- [x] Patient Modell vorhanden
+- [x] Order Modell vorhanden
+- [x] TestOrder Modell vorhanden
+- [x] Specimen Modell vorhanden
+- [x] Result Modell vorhanden
+- [x] Report Modell vorhanden
+- [x] Reagent Modell vorhanden
+- [x] ReagentLot Modell vorhanden
+- [x] StorageLocation Modell vorhanden
+- [x] AuditEntry Modell vorhanden
+- [x] TestDefinition Modell vorhanden
+- [x] Relationen korrekt gesetzt
+- [x] Unique Constraints korrekt gesetzt
+- [x] wichtige Indizes gesetzt
+- [x] `prisma format` läuft
+- [x] `prisma validate` läuft
 - [ ] erste Migration erzeugbar
-- [ ] Prisma Client generierbar
-- [ ] `prisma/seed.ts` Grundlage vorhanden
+- [x] Prisma Client generierbar
+- [x] `prisma/seed.ts` Grundlage vorhanden
 
 ## Erfolgskriterium
 Das Datenmodell ist mit Domain Model und Contracts konsistent und migrationsfähig.
@@ -162,22 +162,22 @@ Das Datenmodell ist mit Domain Model und Contracts konsistent und migrationsfäh
 ## Phase 4 – OpenAPI & Swagger
 
 ## Pflicht
-- [ ] `backend/openapi/mlms.openapi.yaml` vorhanden oder gleichwertige generierte Swagger-Doku vorhanden
-- [ ] OpenAPI Version definiert
-- [ ] Bearer JWT Security dokumentiert
-- [ ] Standard Error Model dokumentiert
-- [ ] Standard Response Envelopes dokumentiert
-- [ ] gemeinsame Enums dokumentiert
-- [ ] Auth Endpunkte dokumentiert
-- [ ] Patient Endpunkte dokumentiert
-- [ ] Order Endpunkte dokumentiert
-- [ ] Specimen Endpunkte dokumentiert
-- [ ] Result Endpunkte dokumentiert
-- [ ] Report Endpunkte dokumentiert
-- [ ] Reagent Endpunkte dokumentiert
-- [ ] Portal Endpunkte dokumentiert
+- [x] `backend/openapi/mlms.openapi.yaml` vorhanden oder gleichwertige generierte Swagger-Doku vorhanden
+- [x] OpenAPI Version definiert
+- [x] Bearer JWT Security dokumentiert
+- [x] Standard Error Model dokumentiert
+- [x] Standard Response Envelopes dokumentiert
+- [x] gemeinsame Enums dokumentiert
+- [x] Auth Endpunkte dokumentiert
+- [x] Patient Endpunkte dokumentiert
+- [x] Order Endpunkte dokumentiert
+- [x] Specimen Endpunkte dokumentiert
+- [x] Result Endpunkte dokumentiert
+- [x] Report Endpunkte dokumentiert
+- [x] Reagent Endpunkte dokumentiert
+- [x] Portal Endpunkte dokumentiert
 - [ ] Request/Response Examples für Hauptpfade vorhanden
-- [ ] Swagger UI erreichbar
+- [x] Swagger UI erreichbar
 
 ## Erfolgskriterium
 API ist für Frontend, Testing und spätere Integrationen nachvollziehbar dokumentiert.
@@ -187,16 +187,16 @@ API ist für Frontend, Testing und spätere Integrationen nachvollziehbar dokume
 ## Phase 5 – Backend Grundsystem
 
 ## Pflicht
-- [ ] NestJS Projekt läuft
-- [ ] `main.ts` vorhanden
-- [ ] `app.module.ts` vorhanden
-- [ ] Config Module vorhanden
-- [ ] Prisma Module vorhanden
-- [ ] Global Validation Pipe vorhanden
-- [ ] Global Exception Filter vorhanden
-- [ ] Language Middleware vorhanden
-- [ ] JWT Grundsystem vorhanden
-- [ ] RBAC Grundsystem vorhanden
+- [x] NestJS Projekt läuft
+- [x] `main.ts` vorhanden
+- [x] `app.module.ts` vorhanden
+- [x] Config Module vorhanden
+- [x] Prisma Module vorhanden
+- [x] Global Validation Pipe vorhanden
+- [x] Global Exception Filter vorhanden
+- [x] Language Middleware vorhanden
+- [x] JWT Grundsystem vorhanden
+- [x] RBAC Grundsystem vorhanden
 
 ## Erfolgskriterium
 Backend startet sauber und besitzt Fundament für Module.
@@ -206,26 +206,26 @@ Backend startet sauber und besitzt Fundament für Module.
 ## Phase 6 – Auth Modul
 
 ## Pflicht
-- [ ] `POST /api/auth/login` implementiert
-- [ ] `POST /api/auth/register` implementiert
-- [ ] `GET /api/auth/me` implementiert
-- [ ] User Entity vorhanden
-- [ ] Passwort-Hashing vorhanden
-- [ ] JWT Token Erstellung vorhanden
-- [ ] JWT Guard vorhanden
-- [ ] Rollenprüfung vorhanden
-- [ ] deaktivierte User werden blockiert
+- [x] `POST /api/auth/login` implementiert
+- [x] `POST /api/auth/register` implementiert
+- [x] `GET /api/auth/me` implementiert
+- [x] User Entity vorhanden
+- [x] Passwort-Hashing vorhanden
+- [x] JWT Token Erstellung vorhanden
+- [x] JWT Guard vorhanden
+- [x] Rollenprüfung vorhanden
+- [x] deaktivierte User werden blockiert
 
 ## UI Pflicht
-- [ ] LoginPage vorhanden
-- [ ] LoginForm vorhanden
-- [ ] Fehleranzeige bei falschem Login
-- [ ] User Session im Frontend gespeichert
-- [ ] Logout möglich
+- [x] LoginPage vorhanden
+- [x] LoginForm vorhanden
+- [x] Fehleranzeige bei falschem Login
+- [x] User Session im Frontend gespeichert
+- [x] Logout möglich
 
 ## Doku Pflicht
-- [ ] Auth Endpunkte in OpenAPI aktuell
-- [ ] Auth DTOs und Swagger Schemas konsistent
+- [x] Auth Endpunkte in OpenAPI aktuell
+- [x] Auth DTOs und Swagger Schemas konsistent
 
 ## Erfolgskriterium
 Ein User kann sich anmelden und rollenbasiert ins System kommen.
@@ -235,24 +235,24 @@ Ein User kann sich anmelden und rollenbasiert ins System kommen.
 ## Phase 7 – i18n Grundsystem
 
 ## Pflicht
-- [ ] `frontend/src/i18n/index.ts` vorhanden
-- [ ] `frontend/src/i18n/rtl.ts` vorhanden
-- [ ] FR Übersetzungen vorhanden
-- [ ] AR Übersetzungen vorhanden
-- [ ] `common.json` vorhanden
-- [ ] `auth.json` vorhanden
-- [ ] `patient.json` vorhanden
-- [ ] `statuses.json` vorhanden
-- [ ] `medical.json` vorhanden
-- [ ] Fallback Sprache ist FR
+- [x] `frontend/src/i18n/index.ts` vorhanden
+- [x] `frontend/src/i18n/rtl.ts` vorhanden
+- [x] FR Übersetzungen vorhanden
+- [x] AR Übersetzungen vorhanden
+- [x] `common.json` vorhanden
+- [x] `auth.json` vorhanden
+- [x] `patient.json` vorhanden
+- [x] `statuses.json` vorhanden
+- [x] `medical.json` vorhanden
+- [x] Fallback Sprache ist FR
 
 ## UI Pflicht
-- [ ] Sprachumschalter vorhanden
-- [ ] FR Ansicht funktioniert
-- [ ] AR Ansicht funktioniert
-- [ ] RTL wird korrekt gesetzt
-- [ ] Sidebar/Layout funktioniert in RTL
-- [ ] Formulare funktionieren in RTL
+- [x] Sprachumschalter vorhanden
+- [x] FR Ansicht funktioniert
+- [x] AR Ansicht funktioniert
+- [x] RTL wird korrekt gesetzt
+- [x] Sidebar/Layout funktioniert in RTL
+- [x] Formulare funktionieren in RTL
 
 ## Erfolgskriterium
 App kann vollständig zwischen FR und AR umschalten.
@@ -262,40 +262,42 @@ App kann vollständig zwischen FR und AR umschalten.
 ## Phase 8 – Patient Modul
 
 ## Backend Pflicht
-- [ ] `POST /api/patients` implementiert
-- [ ] `GET /api/patients` implementiert
-- [ ] `GET /api/patients/:id` implementiert
-- [ ] `PATCH /api/patients/:id` implementiert
-- [ ] Patient Entity vorhanden
-- [ ] Patient Repository vorhanden
-- [ ] RegisterPatient Use Case vorhanden
-- [ ] UpdatePatient Use Case vorhanden
-- [ ] GetPatientById Use Case vorhanden
-- [ ] ListPatients Use Case vorhanden
+- [x] `POST /api/patients` implementiert
+- [x] `GET /api/patients` implementiert
+- [x] `GET /api/patients/:id` implementiert
+- [x] `PATCH /api/patients/:id` implementiert
+- [x] Patient Entity vorhanden
+- [x] Patient Repository vorhanden
+- [x] RegisterPatient Use Case vorhanden
+- [x] UpdatePatient Use Case vorhanden
+- [x] GetPatientById Use Case vorhanden
+- [x] ListPatients Use Case vorhanden
 
 ## Frontend Pflicht
-- [ ] PatientListPage vorhanden
-- [ ] PatientCreatePage vorhanden
-- [ ] PatientDetailPage vorhanden
-- [ ] PatientForm vorhanden
-- [ ] PatientTable vorhanden
-- [ ] Patientsuche vorhanden
-- [ ] Validierungsfehler sichtbar
-- [ ] Erfolgsmeldung bei Erstellung
+- [x] PatientListPage vorhanden
+- [x] PatientCreatePage vorhanden
+- [x] PatientDetailPage vorhanden
+- [x] PatientEditPage vorhanden
+- [x] PatientForm vorhanden (shared für Create + Edit)
+- [x] PatientTable vorhanden
+- [x] Patientsuche vorhanden
+- [x] Validierungsfehler sichtbar
+- [x] Erfolgsmeldung bei Erstellung
+- [x] Edit-Button in PatientDetailPage verdrahtet
 
 ## Daten Pflicht
-- [ ] firstName
-- [ ] lastName
-- [ ] birthDate
-- [ ] gender
-- [ ] phone optional
-- [ ] email optional
-- [ ] address optional
+- [x] firstName
+- [x] lastName
+- [x] birthDate
+- [x] gender
+- [x] phone optional
+- [x] email optional
+- [x] address optional
 
 ## Konsistenz Pflicht
-- [ ] Prisma Modell `Patient` stimmt mit Domain Model überein
-- [ ] OpenAPI Patient Schemas aktuell
-- [ ] Contracts und Frontend Types konsistent
+- [x] Prisma Modell `Patient` stimmt mit Domain Model überein
+- [x] OpenAPI Patient Schemas aktuell
+- [x] Contracts und Frontend Types konsistent
 
 ## Erfolgskriterium
 Ein Patient kann erstellt, bearbeitet, gefunden und angezeigt werden.
@@ -305,35 +307,35 @@ Ein Patient kann erstellt, bearbeitet, gefunden und angezeigt werden.
 ## Phase 9 – Order Modul
 
 ## Backend Pflicht
-- [ ] `POST /api/orders` implementiert
-- [ ] `GET /api/orders` implementiert
-- [ ] `GET /api/orders/:id` implementiert
-- [ ] `PATCH /api/orders/:id/status` implementiert
-- [ ] CreateOrder Use Case vorhanden
-- [ ] ListOrders Use Case vorhanden
-- [ ] GetOrderById Use Case vorhanden
-- [ ] UpdateOrderStatus Use Case vorhanden
-- [ ] Order Statusmodell implementiert
-- [ ] TestOrder Struktur implementiert
+- [x] `POST /api/orders` implementiert
+- [x] `GET /api/orders` implementiert
+- [x] `GET /api/orders/:id` implementiert
+- [x] `PATCH /api/orders/:id/status` implementiert
+- [x] CreateOrder Use Case vorhanden
+- [x] ListOrders Use Case vorhanden
+- [x] GetOrderById Use Case vorhanden
+- [x] UpdateOrderStatus Use Case vorhanden
+- [x] Order Statusmodell implementiert
+- [x] TestOrder Struktur implementiert
 
 ## Frontend Pflicht
-- [ ] OrderListPage vorhanden
-- [ ] OrderCreatePage vorhanden
-- [ ] OrderDetailPage vorhanden
-- [ ] OrderForm vorhanden
-- [ ] TestSelection UI vorhanden
-- [ ] Prioritätsauswahl vorhanden
-- [ ] Status Badge vorhanden
+- [x] OrderListPage vorhanden
+- [x] OrderCreatePage vorhanden
+- [x] OrderDetailPage vorhanden
+- [x] OrderForm vorhanden
+- [x] TestSelection UI vorhanden
+- [x] Prioritätsauswahl vorhanden
+- [x] Status Badge vorhanden
 
 ## Fachlich Pflicht
-- [ ] Order muss einen Patienten haben
-- [ ] Order muss mindestens einen Test haben
-- [ ] PENDING als Startstatus
+- [x] Order muss einen Patienten haben
+- [x] Order muss mindestens einen Test haben
+- [x] PENDING als Startstatus
 
 ## Konsistenz Pflicht
-- [ ] Prisma Modelle `Order` und `TestOrder` korrekt
-- [ ] OpenAPI Order Endpunkte aktuell
-- [ ] Statuswerte überall identisch
+- [x] Prisma Modelle `Order` und `TestOrder` korrekt
+- [x] OpenAPI Order Endpunkte aktuell
+- [x] Statuswerte überall identisch
 
 ## Erfolgskriterium
 Reception kann für einen Patienten eine Order mit Tests anlegen.
@@ -343,30 +345,30 @@ Reception kann für einen Patienten eine Order mit Tests anlegen.
 ## Phase 10 – Specimen Modul
 
 ## Backend Pflicht
-- [ ] `POST /api/specimens` implementiert
-- [ ] `GET /api/specimens/:id` implementiert
-- [ ] `PATCH /api/specimens/:id/status` implementiert
-- [ ] CreateSpecimen Use Case vorhanden
-- [ ] UpdateSpecimenStatus Use Case vorhanden
-- [ ] Barcode Feld vorhanden
-- [ ] Barcode Eindeutigkeit gewährleistet
+- [x] `POST /api/specimens` implementiert
+- [x] `GET /api/specimens/:id` implementiert
+- [x] `PATCH /api/specimens/:id/status` implementiert
+- [x] CreateSpecimen Use Case vorhanden
+- [x] UpdateSpecimenStatus Use Case vorhanden
+- [x] Barcode Feld vorhanden
+- [x] Barcode Eindeutigkeit gewährleistet
 
 ## Frontend Pflicht
-- [ ] SpecimenListPage vorhanden
-- [ ] SpecimenCreatePage vorhanden
-- [ ] SpecimenForm vorhanden
-- [ ] BarcodePreview vorhanden
-- [ ] SpecimenStatusBadge vorhanden
+- [x] SpecimenListPage vorhanden
+- [x] SpecimenCreatePage vorhanden
+- [x] SpecimenForm vorhanden
+- [x] BarcodePreview vorhanden
+- [x] SpecimenStatusBadge vorhanden
 
 ## Fachlich Pflicht
-- [ ] Specimen gehört zu Order
-- [ ] Typ ist auswählbar
-- [ ] CollectionTime vorhanden
-- [ ] Status startet korrekt
+- [x] Specimen gehört zu Order
+- [x] Typ ist auswählbar
+- [x] CollectionTime vorhanden
+- [x] Status startet korrekt
 
 ## Konsistenz Pflicht
-- [ ] Prisma Modell `Specimen` korrekt
-- [ ] OpenAPI Specimen Endpunkte aktuell
+- [x] Prisma Modell `Specimen` korrekt
+- [x] OpenAPI Specimen Endpunkte aktuell
 
 ## Erfolgskriterium
 Technician kann eine Probe erfassen und ihren Status verwalten.
@@ -376,34 +378,34 @@ Technician kann eine Probe erfassen und ihren Status verwalten.
 ## Phase 11 – Result Modul
 
 ## Backend Pflicht
-- [ ] `POST /api/results` implementiert
-- [ ] `PATCH /api/results/:id` implementiert
-- [ ] `GET /api/specimens/:id/results` implementiert
-- [ ] `GET /api/orders/:id/results` implementiert
-- [ ] RecordResult Use Case vorhanden
-- [ ] UpdateResult Use Case vorhanden
-- [ ] Result Flag Modell vorhanden
+- [x] `POST /api/results` implementiert
+- [x] `PATCH /api/results/:id` implementiert
+- [x] `GET /api/specimens/:id/results` implementiert
+- [x] `GET /api/orders/:id/results` implementiert
+- [x] RecordResult Use Case vorhanden
+- [x] UpdateResult Use Case vorhanden
+- [x] Result Flag Modell vorhanden
 
 ## Frontend Pflicht
-- [ ] ResultEntryPage vorhanden
-- [ ] ResultReviewPage vorhanden
-- [ ] ResultForm vorhanden
-- [ ] ResultTable vorhanden
-- [ ] ResultFlagBadge vorhanden
-- [ ] ReferenceRange Anzeige vorhanden
-- [ ] CriticalAlert vorhanden
+- [x] ResultEntryPage vorhanden
+- [x] ResultReviewPage vorhanden
+- [x] ResultForm vorhanden
+- [x] ResultTable vorhanden
+- [x] ResultFlagBadge vorhanden
+- [x] ReferenceRange Anzeige vorhanden
+- [x] CriticalAlert vorhanden
 
 ## Fachlich Pflicht
-- [ ] value ist Pflicht
-- [ ] flag ist Pflicht
-- [ ] measuredAt ist Pflicht
-- [ ] Result gehört zu Specimen
-- [ ] Result kann H/L/CRITICAL darstellen
+- [x] value ist Pflicht
+- [x] flag ist Pflicht
+- [x] measuredAt ist Pflicht
+- [x] Result gehört zu Specimen
+- [x] Result kann H/L/CRITICAL darstellen
 
 ## Konsistenz Pflicht
-- [ ] Prisma Modell `Result` korrekt
-- [ ] OpenAPI Result Endpunkte aktuell
-- [ ] medizinische Codes konsistent mit `medical.json`
+- [x] Prisma Modell `Result` korrekt
+- [x] OpenAPI Result Endpunkte aktuell
+- [x] medizinische Codes konsistent mit `medical.json`
 
 ## Erfolgskriterium
 Technician kann Laborwerte eingeben und prüfen.
@@ -413,37 +415,37 @@ Technician kann Laborwerte eingeben und prüfen.
 ## Phase 12 – Report Modul
 
 ## Backend Pflicht
-- [ ] `POST /api/reports/generate` implementiert
-- [ ] `GET /api/reports/:id` implementiert
-- [ ] `POST /api/reports/:id/validate` implementiert
-- [ ] `POST /api/reports/:id/sign` implementiert
-- [ ] `POST /api/reports/:id/publish` implementiert
-- [ ] GenerateReport Use Case vorhanden
-- [ ] ValidateReport Use Case vorhanden
-- [ ] SignReport Use Case vorhanden
-- [ ] PublishReport Use Case vorhanden
+- [x] `POST /api/reports/generate` implementiert
+- [x] `GET /api/reports/:id` implementiert
+- [x] `POST /api/reports/:id/validate` implementiert
+- [x] `POST /api/reports/:id/sign` implementiert
+- [x] `POST /api/reports/:id/publish` implementiert
+- [x] GenerateReport Use Case vorhanden
+- [x] ValidateReport Use Case vorhanden
+- [x] SignReport Use Case vorhanden
+- [x] PublishReport Use Case vorhanden
 
 ## Frontend Pflicht
-- [ ] ReportValidationQueue vorhanden
-- [ ] ReportDetailPage vorhanden
-- [ ] ReportHeader vorhanden
-- [ ] ReportResultTable vorhanden
-- [ ] ValidationActions vorhanden
-- [ ] SignaturePanel vorhanden
-- [ ] PublishButton vorhanden
-- [ ] Report Comments FR/AR sichtbar
+- [x] ReportValidationQueue vorhanden
+- [x] ReportDetailPage vorhanden
+- [x] ReportHeader vorhanden
+- [x] ReportResultTable vorhanden
+- [x] ValidationActions vorhanden
+- [x] SignaturePanel vorhanden
+- [x] PublishButton vorhanden
+- [x] Report Comments FR/AR sichtbar
 
 ## Fachlich Pflicht
-- [ ] Report startet mit DRAFT
-- [ ] Report kann ohne Results nicht validiert werden
-- [ ] Nur PHYSICIAN darf validieren
-- [ ] Nur validierte Reports dürfen signiert werden
-- [ ] Nur finale Reports dürfen publiziert werden
+- [x] Report startet mit DRAFT
+- [x] Report kann ohne Results nicht validiert werden
+- [x] Nur PHYSICIAN darf validieren
+- [x] Nur validierte Reports dürfen signiert werden
+- [x] Nur finale Reports dürfen publiziert werden
 
 ## Konsistenz Pflicht
-- [ ] Prisma Modell `Report` korrekt
-- [ ] OpenAPI Report Endpunkte aktuell
-- [ ] ReportStatus überall identisch
+- [x] Prisma Modell `Report` korrekt
+- [x] OpenAPI Report Endpunkte aktuell
+- [x] ReportStatus überall identisch
 
 ## Erfolgskriterium
 Laborarzt kann einen Befund validieren, signieren und publizieren.
@@ -453,28 +455,30 @@ Laborarzt kann einen Befund validieren, signieren und publizieren.
 ## Phase 13 – Patient Portal
 
 ## Backend Pflicht
-- [ ] `GET /api/portal/reports` implementiert
-- [ ] `GET /api/portal/reports/:id` implementiert
-- [ ] nur publizierte Reports werden ausgeliefert
+- [x] `GET /api/portal/me` implementiert
+- [x] `GET /api/portal/reports` implementiert
+- [x] `GET /api/portal/reports/:id` implementiert
+- [x] nur publizierte Reports werden ausgeliefert
 
 ## Frontend Pflicht
-- [ ] PortalLoginPage vorhanden
-- [ ] MyReportsPage vorhanden
-- [ ] MyReportDetailPage vorhanden
-- [ ] ReportCard vorhanden
-- [ ] ReportPdfViewer oder HTML View vorhanden
-- [ ] Download Button vorhanden
-- [ ] Portal in FR und AR verfügbar
+- [x] PortalLoginPage vorhanden
+- [x] MyReportsPage vorhanden
+- [x] MyReportDetailPage vorhanden
+- [x] MyProfilePage vorhanden
+- [x] ReportCard vorhanden
+- [x] ReportPdfViewer oder HTML View vorhanden
+- [x] Download Button vorhanden
+- [x] Portal in FR und AR verfügbar
 
 ## Fachlich Pflicht
-- [ ] Patient sieht nur eigene Reports
-- [ ] nur veröffentlichte Reports sichtbar
-- [ ] medizinische Begriffe korrekt übersetzt
-- [ ] patientenfreundliche Anzeige möglich
+- [x] Patient sieht nur eigene Reports
+- [x] nur veröffentlichte Reports sichtbar
+- [x] medizinische Begriffe korrekt übersetzt
+- [x] patientenfreundliche Anzeige möglich
 
 ## Konsistenz Pflicht
-- [ ] OpenAPI Portal Endpunkte aktuell
-- [ ] Portal DTOs konsistent mit Contracts
+- [x] OpenAPI Portal Endpunkte aktuell
+- [x] Portal DTOs konsistent mit Contracts
 
 ## Erfolgskriterium
 Patient kann eigene Befunde sicher einsehen.
@@ -484,36 +488,36 @@ Patient kann eigene Befunde sicher einsehen.
 ## Phase 14 – Reagent / Inventory Basic
 
 ## Backend Pflicht
-- [ ] `POST /api/reagents` implementiert
-- [ ] `GET /api/reagents` implementiert
-- [ ] `POST /api/reagents/lots` implementiert
-- [ ] `GET /api/reagents/:id/lots` implementiert
-- [ ] `POST /api/reagents/consume` implementiert
-- [ ] CreateReagent Use Case vorhanden
-- [ ] ReceiveReagentLot Use Case vorhanden
-- [ ] ConsumeReagentForTest Use Case vorhanden
+- [x] `POST /api/reagents` implementiert
+- [x] `GET /api/reagents` implementiert
+- [x] `POST /api/reagents/lots` implementiert
+- [x] `GET /api/reagents/:id/lots` implementiert
+- [x] `POST /api/reagents/consume` implementiert
+- [x] CreateReagent Use Case vorhanden
+- [x] ReceiveReagentLot Use Case vorhanden
+- [x] ConsumeReagentForTest Use Case vorhanden
 
 ## Frontend Pflicht
-- [ ] ReagentListPage vorhanden
-- [ ] ReagentCreatePage vorhanden
-- [ ] ReagentLotPage vorhanden
-- [ ] InventoryDashboardPage vorhanden
-- [ ] ReagentTable vorhanden
-- [ ] ReagentLotTable vorhanden
-- [ ] StockAlertBanner vorhanden
-- [ ] ExpiryAlertBanner vorhanden
+- [x] ReagentListPage vorhanden
+- [x] ReagentCreatePage vorhanden
+- [x] ReagentLotPage vorhanden
+- [x] InventoryDashboardPage vorhanden
+- [x] ReagentTable vorhanden
+- [x] ReagentLotTable vorhanden
+- [x] StockAlertBanner vorhanden
+- [x] ExpiryAlertBanner vorhanden
 
 ## Fachlich Pflicht
-- [ ] LotNumber vorhanden
-- [ ] expiryDate vorhanden
-- [ ] currentQuantity vorhanden
-- [ ] negative Bestände verboten
-- [ ] blockierte Lots dürfen nicht verbraucht werden
-- [ ] abgelaufene Lots dürfen nicht verbraucht werden
+- [x] LotNumber vorhanden
+- [x] expiryDate vorhanden
+- [x] currentQuantity vorhanden
+- [x] negative Bestände verboten
+- [x] blockierte Lots dürfen nicht verbraucht werden
+- [x] abgelaufene Lots dürfen nicht verbraucht werden
 
 ## Konsistenz Pflicht
-- [ ] Prisma Modelle `Reagent` und `ReagentLot` korrekt
-- [ ] OpenAPI Reagent Endpunkte aktuell
+- [x] Prisma Modelle `Reagent` und `ReagentLot` korrekt
+- [x] OpenAPI Reagent Endpunkte aktuell
 
 ## Erfolgskriterium
 Admin kann Reagenzien und Lots verwalten und Verbrauch buchen.
@@ -523,13 +527,16 @@ Admin kann Reagenzien und Lots verwalten und Verbrauch buchen.
 ## Phase 15 – Dashboard & Navigation
 
 ## Pflicht
-- [ ] MainLayout vorhanden
-- [ ] Sidebar vorhanden
-- [ ] Header vorhanden
-- [ ] DashboardPage vorhanden
-- [ ] Rollenbasierte Menüs vorhanden
-- [ ] Logout Button vorhanden
-- [ ] Sprachumschalter im Header vorhanden
+- [x] MainLayout vorhanden
+- [x] Sidebar vorhanden
+- [x] Header vorhanden
+- [x] DashboardPage vorhanden
+- [x] Rollenbasierte Menüs vorhanden
+- [x] Logout Button vorhanden
+- [x] Sprachumschalter im Header vorhanden
+- [x] `/specimens` Sidebar-Link funktioniert (SpecimensAllPage)
+- [x] `/results` Sidebar-Link funktioniert (ResultsIndexPage)
+- [x] `/users` Sidebar-Link funktioniert (UserListPage, ADMIN only)
 
 ## Erfolgskriterium
 Benutzer navigieren sauber durch das System.
@@ -539,13 +546,22 @@ Benutzer navigieren sauber durch das System.
 ## Phase 16 – Rollen & Rechte
 
 ## Pflicht
-- [ ] RECEPTION Rechte implementiert
-- [ ] TECHNICIAN Rechte implementiert
-- [ ] PHYSICIAN Rechte implementiert
-- [ ] ADMIN Rechte implementiert
-- [ ] Backend Guards vorhanden
-- [ ] Frontend Route-Schutz vorhanden
-- [ ] UI blendet verbotene Aktionen aus
+- [x] RECEPTION Rechte implementiert
+- [x] TECHNICIAN Rechte implementiert
+- [x] PHYSICIAN Rechte implementiert
+- [x] ADMIN Rechte implementiert
+- [x] Backend Guards vorhanden
+- [x] Frontend Route-Schutz vorhanden
+- [x] UI blendet verbotene Aktionen aus
+- [x] UserController mit `GET /api/users` (ADMIN only)
+- [x] UserController mit `GET /api/users/:id` (ADMIN only)
+- [x] UserController mit `PATCH /api/users/:id` (ADMIN only) — Rolle, Sprache, isActive
+- [x] ListUsers Use Case vorhanden
+- [x] GetUserById Use Case vorhanden
+- [x] UpdateUser Use Case vorhanden (inkl. Schutz gegen Selbst-Deaktivierung)
+- [x] UserListPage vorhanden (ADMIN only) — mit Edit- und Toggle-Aktionen
+- [x] UserCreatePage vorhanden (`/users/new`) — via POST /auth/register
+- [x] UserEditPage vorhanden (`/users/:id/edit`) — Rolle, Sprache, Aktivstatus
 
 ## Erfolgskriterium
 Jede Rolle sieht nur ihre erlaubten Bereiche.
@@ -555,13 +571,13 @@ Jede Rolle sieht nur ihre erlaubten Bereiche.
 ## Phase 17 – Audit & Nachvollziehbarkeit
 
 ## Pflicht
-- [ ] AuditEntry Modell vorhanden
+- [x] AuditEntry Modell vorhanden
 - [ ] Login wird geloggt
 - [ ] Result Änderungen werden geloggt
 - [ ] Report Validation wird geloggt
 - [ ] Report Signatur wird geloggt
 - [ ] Report Publish wird geloggt
-- [ ] Reagent Consumption wird geloggt
+- [x] Reagent Consumption wird geloggt
 - [ ] User Rollenänderung wird geloggt
 
 ## Erfolgskriterium
@@ -572,20 +588,20 @@ Kritische Aktionen sind nachvollziehbar.
 ## Phase 18 – Medizinische Begriffe
 
 ## Pflicht
-- [ ] `medical.json` FR vorhanden
-- [ ] `medical.json` AR vorhanden
-- [ ] dieselben Keys in FR und AR
-- [ ] HGB vorhanden
-- [ ] WBC vorhanden
-- [ ] RBC vorhanden
-- [ ] PLT vorhanden
-- [ ] GLU vorhanden
-- [ ] CRE vorhanden
-- [ ] CRP vorhanden
-- [ ] HBA1C vorhanden
-- [ ] Flags vorhanden
-- [ ] Units vorhanden
-- [ ] Specimen Begriffe vorhanden
+- [x] `medical.json` FR vorhanden
+- [x] `medical.json` AR vorhanden
+- [x] dieselben Keys in FR und AR
+- [x] HGB vorhanden
+- [x] WBC vorhanden
+- [x] RBC vorhanden
+- [x] PLT vorhanden
+- [x] GLU vorhanden
+- [x] CRE vorhanden
+- [x] CRP vorhanden
+- [x] HBA1C vorhanden
+- [x] Flags vorhanden
+- [x] Units vorhanden
+- [x] Specimen Begriffe vorhanden
 
 ## Erfolgskriterium
 Das System kann Kernanalysen korrekt in FR und AR anzeigen.
@@ -595,16 +611,16 @@ Das System kann Kernanalysen korrekt in FR und AR anzeigen.
 ## Phase 19 – UI Qualität
 
 ## Pflicht
-- [ ] Buttons aus shared/ui
-- [ ] Inputs aus shared/ui
-- [ ] Tabellen aus shared/ui
-- [ ] Badges aus shared/ui
-- [ ] keine wilden Inline Styles
-- [ ] konsistente Farben
-- [ ] H/L/CRITICAL farbig dargestellt
-- [ ] leere Zustände vorhanden
-- [ ] Ladezustände vorhanden
-- [ ] Fehlerzustände vorhanden
+- [x] Buttons aus shared/ui
+- [x] Inputs aus shared/ui
+- [x] Tabellen aus shared/ui
+- [x] Badges aus shared/ui
+- [x] keine wilden Inline Styles
+- [x] konsistente Farben
+- [x] H/L/CRITICAL farbig dargestellt
+- [x] leere Zustände vorhanden
+- [x] Ladezustände vorhanden
+- [x] Fehlerzustände vorhanden
 
 ## Erfolgskriterium
 Das UI wirkt konsistent und verständlich.
@@ -614,21 +630,21 @@ Das UI wirkt konsistent und verständlich.
 ## Phase 20 – Tests Minimum
 
 ## Backend Tests
-- [ ] Auth E2E Test
-- [ ] Patient E2E Test
-- [ ] Order E2E Test
-- [ ] Report E2E Test
-- [ ] Prisma-basierte Testdatenstrategie vorhanden
+- [x] Auth E2E Test
+- [x] Patient E2E Test
+- [x] Order E2E Test
+- [x] Report E2E Test
+- [x] Prisma-basierte Testdatenstrategie vorhanden
 
 ## Frontend Tests
-- [ ] Login render test
-- [ ] Patient Form render test
-- [ ] Language switch test
-- [ ] RTL test
+- [x] Login render test
+- [x] Patient Form render test
+- [x] Language switch test
+- [x] RTL test
 
 ## API/Doku Tests
-- [ ] Swagger / OpenAPI erreichbar
-- [ ] dokumentierte Hauptendpunkte stimmen mit Implementierung überein
+- [x] Swagger / OpenAPI erreichbar
+- [x] dokumentierte Hauptendpunkte stimmen mit Implementierung überein
 
 ## Erfolgskriterium
 Kritische MVP-Flows sind testbar abgesichert.
@@ -640,34 +656,34 @@ Kritische MVP-Flows sind testbar abgesichert.
 Dieser Workflow muss im MVP vollständig funktionieren:
 
 ### Schritt 1
-- [ ] User loggt sich als RECEPTION ein
+- [x] User loggt sich als RECEPTION ein
 
 ### Schritt 2
-- [ ] Patient wird angelegt
+- [x] Patient wird angelegt
 
 ### Schritt 3
-- [ ] Order mit mindestens einem Test wird angelegt
+- [x] Order mit mindestens einem Test wird angelegt
 
 ### Schritt 4
-- [ ] Technician erstellt Specimen
+- [x] Technician erstellt Specimen
 
 ### Schritt 5
-- [ ] Technician erfasst Result
+- [x] Technician erfasst Result
 
 ### Schritt 6
-- [ ] Physician generiert oder öffnet Report
+- [x] Physician generiert oder öffnet Report
 
 ### Schritt 7
-- [ ] Physician validiert Report
+- [x] Physician validiert Report
 
 ### Schritt 8
-- [ ] Physician signiert/finalisiert Report
+- [x] Physician signiert/finalisiert Report
 
 ### Schritt 9
-- [ ] Report wird publiziert
+- [x] Report wird publiziert
 
 ### Schritt 10
-- [ ] Patient sieht den Report im Portal
+- [x] Patient sieht den Report im Portal
 
 ## Erfolgskriterium
 Kompletter Labordurchlauf von Aufnahme bis veröffentlichter Befund funktioniert.
@@ -696,21 +712,21 @@ Das MVP ist abnahmebereit, wenn:
 
 - [ ] Docker lokal stabil läuft
 - [ ] Prisma Schema und Migrationen stabil sind
-- [ ] OpenAPI / Swagger aktuell und erreichbar ist
-- [ ] Auth funktioniert
-- [ ] FR/AR funktioniert
-- [ ] RTL funktioniert
-- [ ] Patient Modul funktioniert
-- [ ] Order Modul funktioniert
-- [ ] Specimen Modul funktioniert
-- [ ] Result Modul funktioniert
-- [ ] Report Modul funktioniert
-- [ ] Patient Portal funktioniert
-- [ ] Reagent Modul Grundfunktionen funktionieren
-- [ ] Rollen/Rechte funktionieren
+- [x] OpenAPI / Swagger aktuell und erreichbar ist
+- [x] Auth funktioniert
+- [x] FR/AR funktioniert
+- [x] RTL funktioniert
+- [x] Patient Modul funktioniert
+- [x] Order Modul funktioniert
+- [x] Specimen Modul funktioniert
+- [x] Result Modul funktioniert
+- [x] Report Modul funktioniert
+- [x] Patient Portal funktioniert
+- [x] Reagent Modul Grundfunktionen funktionieren
+- [x] Rollen/Rechte funktionieren
 - [ ] Audit für kritische Aktionen funktioniert
-- [ ] medizinische Begriffe korrekt erscheinen
-- [ ] Hauptworkflow End-to-End funktioniert
+- [x] medizinische Begriffe korrekt erscheinen
+- [x] Hauptworkflow End-to-End funktioniert
 
 ---
 

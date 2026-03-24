@@ -1,0 +1,43 @@
+{
+  "title": "التقارير",
+  "validationQueue": "قائمة الاعتماد",
+  "historyTitle": "سجل التقارير",
+  "detailTitle": "تفاصيل التقرير",
+  "previewTitle": "معاينة التقرير",
+  "generate": {
+    "title": "إنشاء تقرير",
+    "orderId": "رقم الطلب",
+    "button": "إنشاء"
+  },
+  "fields": {
+    "comments": "التعليقات",
+    "results": "النتائج ({{count}})",
+    "commentsFr": "التعليق بالفرنسية",
+    "commentsAr": "التعليق بالعربية",
+    "validatedBy": "تم الاعتماد بواسطة",
+    "validatedAt": "تاريخ الاعتماد",
+    "signedBy": "تم التوقيع بواسطة",
+    "signedAt": "تاريخ التوقيع",
+    "publishedAt": "تاريخ النشر",
+    "templateVersion": "إصدار القالب"
+  },
+  "actions": {
+    "generate": "إنشاء",
+    "validate": "اعتماد",
+    "sign": "توقيع",
+    "publish": "نشر",
+    "preview": "معاينة",
+    "correct": "تصحيح"
+  },
+  "messages": {
+    "generated": "تم إنشاء التقرير بنجاح",
+    "validated": "تم اعتماد التقرير",
+    "signed": "تم توقيع التقرير",
+    "published": "تم نشر التقرير",
+    "noResults": "لا توجد نتائج لهذا الطلب",
+    "validateConfirm": "تأكيد اعتماد هذا التقرير؟",
+    "signConfirm": "تأكيد توقيع هذا التقرير؟",
+    "publishConfirm": "نشر هذا التقرير في بوابة المريض؟",
+    "notFound": "التقرير غير موجود"
+  }
+}

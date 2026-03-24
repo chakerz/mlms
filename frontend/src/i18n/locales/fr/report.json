@@ -1,0 +1,43 @@
+{
+  "title": "Rapports",
+  "validationQueue": "File de validation",
+  "historyTitle": "Historique des rapports",
+  "detailTitle": "Détail du rapport",
+  "previewTitle": "Aperçu du rapport",
+  "generate": {
+    "title": "Générer un rapport",
+    "orderId": "Numéro de demande",
+    "button": "Générer"
+  },
+  "fields": {
+    "comments": "Commentaires",
+    "results": "Résultats ({{count}})",
+    "commentsFr": "Commentaire en français",
+    "commentsAr": "Commentaire en arabe",
+    "validatedBy": "Validé par",
+    "validatedAt": "Validé le",
+    "signedBy": "Signé par",
+    "signedAt": "Signé le",
+    "publishedAt": "Publié le",
+    "templateVersion": "Version du modèle"
+  },
+  "actions": {
+    "generate": "Générer",
+    "validate": "Valider",
+    "sign": "Signer",
+    "publish": "Publier",
+    "preview": "Aperçu",
+    "correct": "Corriger"
+  },
+  "messages": {
+    "generated": "Rapport généré avec succès",
+    "validated": "Rapport validé",
+    "signed": "Rapport signé",
+    "published": "Rapport publié",
+    "noResults": "Aucun résultat disponible pour cette commande",
+    "validateConfirm": "Confirmer la validation de ce rapport ?",
+    "signConfirm": "Confirmer la signature de ce rapport ?",
+    "publishConfirm": "Publier ce rapport dans le portail patient ?",
+    "notFound": "Rapport introuvable"
+  }
+}
