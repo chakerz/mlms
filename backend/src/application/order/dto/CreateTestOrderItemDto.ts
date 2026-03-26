@@ -15,7 +15,6 @@ export class CreateTestOrderItemDto {
 
   @ApiProperty({ example: 'الهيموغلوبين' })
   @IsString()
-  @IsNotEmpty()
   testNameAr: string;
 
   @ApiPropertyOptional({ enum: TestOrderPriority, default: TestOrderPriority.ROUTINE })

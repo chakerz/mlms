@@ -20,6 +20,12 @@ export class RegisterPatient {
       dto.address ?? null,
       new Date(),
       new Date(),
+      dto.bloodType ?? null,
+      dto.allergies ?? null,
+      dto.emergencyContactName ?? null,
+      dto.emergencyContactPhone ?? null,
+      dto.healthInsuranceNumber ?? null,
+      dto.pricingTierId ?? null,
     );
     const saved = await this.patientRepository.save(patient);
     return this.toDto(saved);
@@ -35,6 +41,12 @@ export class RegisterPatient {
       phone: patient.phone,
       email: patient.email,
       address: patient.address,
+      bloodType: patient.bloodType,
+      allergies: patient.allergies,
+      emergencyContactName: patient.emergencyContactName,
+      emergencyContactPhone: patient.emergencyContactPhone,
+      healthInsuranceNumber: patient.healthInsuranceNumber,
+      pricingTierId: patient.pricingTierId,
       createdAt: patient.createdAt.toISOString(),
       updatedAt: patient.updatedAt.toISOString(),
     };

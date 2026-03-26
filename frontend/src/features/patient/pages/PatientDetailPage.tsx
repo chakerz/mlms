@@ -25,6 +25,11 @@ export function PatientDetailPage() {
     { label: t('form.phone'), value: patient.phone ?? '–' },
     { label: t('form.email'), value: patient.email ?? '–' },
     { label: t('form.address'), value: patient.address ?? '–' },
+    { label: t('form.bloodType'), value: patient.bloodType ?? '–' },
+    { label: t('form.allergies'), value: patient.allergies ?? '–' },
+    { label: t('form.emergencyContactName'), value: patient.emergencyContactName ?? '–' },
+    { label: t('form.emergencyContactPhone'), value: patient.emergencyContactPhone ?? '–' },
+    { label: t('form.healthInsuranceNumber'), value: patient.healthInsuranceNumber ?? '–' },
   ]
 
   return (

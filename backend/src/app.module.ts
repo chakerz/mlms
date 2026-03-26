@@ -17,6 +17,13 @@ import { PortalModule } from './modules/portal.module';
 import { UserModule } from './modules/user.module';
 import { TestDefinitionModule } from './modules/test-definition.module';
 import { NonConformiteModule } from './modules/non-conformite.module';
+import { PractitionerModule } from './modules/practitioner.module';
+import { InvoiceModule } from './modules/invoice.module';
+import { PaymentModule } from './modules/payment.module';
+import { QCModule } from './modules/qc.module';
+import { PricingModule } from './modules/pricing.module';
+import { SampleModule } from './modules/sample.module';
+import { InstrumentModule } from './modules/instrument.module';
 import { LanguageMiddleware } from './interfaces/http/middleware/LanguageMiddleware';
 
 @Module({
@@ -39,6 +46,13 @@ import { LanguageMiddleware } from './interfaces/http/middleware/LanguageMiddlew
     UserModule,
     TestDefinitionModule,
     NonConformiteModule,
+    PractitionerModule,
+    InvoiceModule,
+    PaymentModule,
+    QCModule,
+    PricingModule,
+    SampleModule,
+    InstrumentModule,
   ],
 })
 export class AppModule implements NestModule {

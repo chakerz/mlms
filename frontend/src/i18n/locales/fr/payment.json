@@ -1,0 +1,40 @@
+{
+  "title": {
+    "list": "Paiements",
+    "create": "Enregistrer un paiement",
+    "detail": "Détail du paiement"
+  },
+  "form": {
+    "referenceNumber": "N° Référence",
+    "invoiceId": "N° Facture",
+    "patientName": "Nom du patient",
+    "paymentDate": "Date de paiement",
+    "totalAmount": "Montant total",
+    "amountPaid": "Montant payé",
+    "paymentMethod": "Mode de paiement",
+    "notes": "Notes",
+    "status": "Statut"
+  },
+  "status": {
+    "PENDING": "En attente",
+    "COMPLETED": "Complété",
+    "FAILED": "Échoué",
+    "REFUNDED": "Remboursé"
+  },
+  "method": {
+    "CASH": "Espèces",
+    "CARD": "Carte bancaire",
+    "CHECK": "Chèque",
+    "BANK_TRANSFER": "Virement bancaire",
+    "INSURANCE": "Assurance"
+  },
+  "actions": {
+    "create": "Enregistrer un paiement",
+    "updateStatus": "Modifier le statut"
+  },
+  "messages": {
+    "notFound": "Paiement introuvable",
+    "createError": "Erreur lors de l'enregistrement du paiement",
+    "updateError": "Erreur lors de la mise à jour du paiement"
+  }
+}

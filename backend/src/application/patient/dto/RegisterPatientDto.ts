@@ -25,4 +25,28 @@ export class RegisterPatientDto {
   @IsOptional()
   @IsString()
   address?: string | null;
+
+  @IsOptional()
+  @IsString()
+  bloodType?: string | null;
+
+  @IsOptional()
+  @IsString()
+  allergies?: string | null;
+
+  @IsOptional()
+  @IsString()
+  emergencyContactName?: string | null;
+
+  @IsOptional()
+  @IsString()
+  emergencyContactPhone?: string | null;
+
+  @IsOptional()
+  @IsString()
+  healthInsuranceNumber?: string | null;
+
+  @IsOptional()
+  @IsString()
+  pricingTierId?: string | null;
 }

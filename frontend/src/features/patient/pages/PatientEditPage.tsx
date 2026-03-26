@@ -57,6 +57,11 @@ export function PatientEditPage() {
               phone: patient.phone ?? '',
               email: patient.email ?? '',
               address: patient.address ?? '',
+              bloodType: patient.bloodType ?? '',
+              allergies: patient.allergies ?? '',
+              emergencyContactName: patient.emergencyContactName ?? '',
+              emergencyContactPhone: patient.emergencyContactPhone ?? '',
+              healthInsuranceNumber: patient.healthInsuranceNumber ?? '',
             }}
             onSubmit={handleSubmit}
             isLoading={isUpdating}

@@ -1,0 +1,23 @@
+{
+    "id": "019c1a5b-4370-73b5-a2d0-59312510d9b5",
+    "sampleCode": "ECOUVILLON",
+    "name": "Écouvillon",
+    "sampleType": "Swab",
+    "sampleDescription": "Prélèvement sur écouvillon pour analyses microbiologiques et PCR génitales.",
+    "collectionMethod": "Prélèvement avec écouvillon stérile selon le site (génital, ORL, etc.).",
+    "containerType": "Swab Container",
+    "storageConditions": "Conservation à température ambiante. Analyser rapidement (dans les 24h).",
+    "handlingInstructions": "Frotter délicatement la zone à prélever. Placer dans le milieu de transport. Conserver à température ambiante.",
+    "processingDate": "2026-02-01T17:58:34.496639Z",
+    "processingMethod": "Standard laboratory processing",
+    "processedBy": "bensakhria.ayoub@gmail.com",
+    "storageLocation": "Laboratory storage",
+    "sampleStatus": "Active",
+    "qcPassed": true,
+    "qcNotes": "",
+    "specimenIds": [],
+    "testIds": [],
+    "sampleInventoryLineIds": [],
+    "createdAt": "2026-02-01T17:58:34.608635Z",
+    "updatedAt": "2026-02-01T17:58:34.608635Z"
+}

@@ -11,6 +11,12 @@ export interface PatientDto {
   phone?: string
   email?: string
   address?: string
+  bloodType?: string | null
+  allergies?: string | null
+  emergencyContactName?: string | null
+  emergencyContactPhone?: string | null
+  healthInsuranceNumber?: string | null
+  pricingTierId?: string | null
   createdAt: string
   updatedAt: string
 }
@@ -23,6 +29,12 @@ export interface CreatePatientDto {
   phone?: string
   email?: string
   address?: string
+  bloodType?: string | null
+  allergies?: string | null
+  emergencyContactName?: string | null
+  emergencyContactPhone?: string | null
+  healthInsuranceNumber?: string | null
+  pricingTierId?: string | null
 }
 
 export interface UpdatePatientDto {
@@ -33,6 +45,12 @@ export interface UpdatePatientDto {
   phone?: string | null
   email?: string | null
   address?: string | null
+  bloodType?: string | null
+  allergies?: string | null
+  emergencyContactName?: string | null
+  emergencyContactPhone?: string | null
+  healthInsuranceNumber?: string | null
+  pricingTierId?: string | null
 }
 
 interface PaginatedPatients {

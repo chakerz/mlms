@@ -1,0 +1,401 @@
+[
+  {
+    "codes": ["NA", "NAS", "NAS585"],
+    "nameDe": "Natrium",
+    "referenceRange": { "default": "135–148", "male": "135–148", "female": "135–148", "child": "130–145" },
+    "referenceLow": 135, "referenceHigh": 148,
+    "unit": "mmol/l"
+  },
+  {
+    "codes": ["K", "KS", "KS590"],
+    "nameDe": "Kalium",
+    "referenceRange": { "default": "3.6–5.2" },
+    "referenceLow": 3.6, "referenceHigh": 5.2,
+    "unit": "mmol/l"
+  },
+  {
+    "codes": ["CAL293591", "CA302"],
+    "nameDe": "Calcium gesamt",
+    "referenceRange": { "default": "2.20–2.65" },
+    "referenceLow": 2.20, "referenceHigh": 2.65,
+    "unit": "mmol/l"
+  },
+  {
+    "codes": ["CAIO"],
+    "nameDe": "Calcium ionisiert",
+    "referenceRange": { "default": "1.15–1.32" },
+    "referenceLow": 1.15, "referenceHigh": 1.32,
+    "unit": "mmol/l"
+  },
+  {
+    "codes": ["CL"],
+    "nameDe": "Chlorid",
+    "referenceRange": { "default": "95–110" },
+    "referenceLow": 95, "referenceHigh": 110,
+    "unit": "mmol/l"
+  },
+  {
+    "codes": ["MGS593", "MGS"],
+    "nameDe": "Magnesium",
+    "referenceRange": { "default": "0.7–1.1" },
+    "referenceLow": 0.7, "referenceHigh": 1.1,
+    "unit": "mmol/l"
+  },
+  {
+    "codes": ["R841"],
+    "nameDe": "Phosphat",
+    "referenceRange": { "default": "0.84–1.45" },
+    "referenceLow": 0.84, "referenceHigh": 1.45,
+    "unit": "mmol/l"
+  },
+  {
+    "codes": ["GLU"],
+    "nameDe": "Glucose nüchtern",
+    "referenceRange": { "default": "70–100" },
+    "referenceLow": 70, "referenceHigh": 100,
+    "unit": "mg/dl"
+  },
+  {
+    "codes": ["HBA1C", "A1C", "R824"],
+    "nameDe": "HbA1c",
+    "referenceRange": { "default": "4.2–6.2" },
+    "referenceLow": 4.2, "referenceHigh": 6.2,
+    "unit": "%"
+  },
+  {
+    "codes": ["PROTT"],
+    "nameDe": "Gesamteiweiss",
+    "referenceRange": { "default": "6.6–8.3" },
+    "referenceLow": 6.6, "referenceHigh": 8.3,
+    "unit": "g/dl"
+  },
+  {
+    "codes": ["UREE"],
+    "nameDe": "Harnstoff",
+    "referenceRange": { "default": "10–55" },
+    "referenceLow": 10, "referenceHigh": 55,
+    "unit": "mg/dl"
+  },
+  {
+    "codes": ["CREA", "CR", "R831"],
+    "nameDe": "Kreatinin",
+    "referenceRange": { "default": "0.8–1.4", "male": "0.9–1.4", "female": "0.8–1.2" },
+    "referenceLow": 0.8, "referenceHigh": 1.4,
+    "unit": "mg/dl"
+  },
+  {
+    "codes": ["R820", "ACU"],
+    "nameDe": "Harnsäure",
+    "referenceRange": { "default": "2.5–7.0", "male": "3.5–7.0", "female": "2.5–5.7" },
+    "referenceLow": 2.5, "referenceHigh": 7.0,
+    "unit": "mg/dl"
+  },
+  {
+    "codes": ["TG", "R826"],
+    "nameDe": "Triglyceride",
+    "referenceRange": { "default": "50–200" },
+    "referenceLow": 50, "referenceHigh": 200,
+    "unit": "mg/dl"
+  },
+  {
+    "codes": ["CHOT", "R825"],
+    "nameDe": "Cholesterin",
+    "referenceRange": { "default": "140–200" },
+    "referenceLow": 140, "referenceHigh": 200,
+    "unit": "mg/dl"
+  },
+  {
+    "codes": ["HDL", "R827"],
+    "nameDe": "HDL",
+    "referenceRange": { "default": ">35", "male": ">35", "female": ">42" },
+    "referenceLow": 35,
+    "unit": "mg/dl"
+  },
+  {
+    "codes": ["LDL", "R866"],
+    "nameDe": "LDL",
+    "referenceRange": { "default": "<130" },
+    "referenceHigh": 130,
+    "unit": "mg/dl"
+  },
+  {
+    "codes": ["FE"],
+    "nameDe": "Eisen",
+    "referenceRange": { "default": "23–168", "male": "35–168", "female": "23–163" },
+    "referenceLow": 23, "referenceHigh": 168,
+    "unit": "µg/dl"
+  },
+  {
+    "codes": ["R425"],
+    "nameDe": "Ferritin",
+    "referenceRange": { "default": "23–217", "male": "23–110", "female": "35–217", "child": "35–217" },
+    "referenceLow": 23, "referenceHigh": 217,
+    "unit": "µg/l"
+  },
+  {
+    "codes": ["ASAT", "ASAT106"],
+    "nameDe": "GOT / AST",
+    "referenceRange": { "default": "<50", "male": "<50", "female": "<35" },
+    "referenceHigh": 50,
+    "unit": "U/l"
+  },
+  {
+    "codes": ["ALAT", "ALAT77"],
+    "nameDe": "GPT / ALT",
+    "referenceRange": { "default": "<50", "male": "<50", "female": "<35" },
+    "referenceHigh": 50,
+    "unit": "U/l"
+  },
+  {
+    "codes": ["GGT", "R804"],
+    "nameDe": "Gamma-GT",
+    "referenceRange": { "default": "4–71", "male": "10–71", "female": "4–18" },
+    "referenceLow": 4, "referenceHigh": 71,
+    "unit": "U/l"
+  },
+  {
+    "codes": ["ALP", "PAL"],
+    "nameDe": "Alkalische Phosphatase",
+    "referenceRange": { "default": "60–175", "male": "70–175", "female": "60–170" },
+    "referenceLow": 60, "referenceHigh": 175,
+    "unit": "U/l"
+  },
+  {
+    "codes": ["BILTOT", "BT"],
+    "nameDe": "Bilirubin gesamt",
+    "referenceRange": { "default": "<1.1" },
+    "referenceHigh": 1.1,
+    "unit": "mg/dl"
+  },
+  {
+    "codes": ["BLBD", "BC", "BILCOND", "BC80"],
+    "nameDe": "Bilirubin direkt",
+    "referenceRange": { "default": "<0.3" },
+    "referenceHigh": 0.3,
+    "unit": "mg/dl"
+  },
+  {
+    "codes": ["BL", "BLBI", "BL129"],
+    "nameDe": "Bilirubin indirekt",
+    "referenceRange": { "default": "<0.8" },
+    "referenceHigh": 0.8,
+    "unit": "mg/dl"
+  },
+  {
+    "codes": ["AMO"],
+    "nameDe": "Ammoniak",
+    "referenceRange": { "default": "20–80", "male": "28–80", "female": "20–65" },
+    "referenceLow": 20, "referenceHigh": 80,
+    "unit": "µg/dl"
+  },
+  {
+    "codes": ["MYO"],
+    "nameDe": "Myoglobin",
+    "referenceRange": { "default": "<70", "male": "21–98", "female": "19–56" },
+    "referenceHigh": 70,
+    "unit": "ng/ml"
+  },
+  {
+    "codes": ["R8112"],
+    "nameDe": "Troponin",
+    "referenceRange": { "default": "0.01–0.08" },
+    "referenceLow": 0.01, "referenceHigh": 0.08,
+    "unit": "ng/ml"
+  },
+  {
+    "codes": ["R807"],
+    "nameDe": "LDH",
+    "referenceRange": { "default": "266–500" },
+    "referenceLow": 266, "referenceHigh": 500,
+    "unit": "U/l"
+  },
+  {
+    "codes": ["R893"],
+    "nameDe": "Lipase",
+    "referenceRange": { "default": "<60" },
+    "referenceHigh": 60,
+    "unit": "U/l"
+  },
+  {
+    "codes": ["TQ"],
+    "nameDe": "Quick / TP",
+    "referenceRange": { "default": "70–100" },
+    "referenceLow": 70, "referenceHigh": 100,
+    "unit": "%"
+  },
+  {
+    "codes": ["INR", "TAUPROTPINR"],
+    "nameDe": "INR",
+    "referenceRange": { "default": "0.8–1.2" },
+    "referenceLow": 0.8, "referenceHigh": 1.2,
+    "unit": "-"
+  },
+  {
+    "codes": ["TCK", "TEMPSDECEPHALINEACTIVETCA"],
+    "nameDe": "PTT / TCA",
+    "referenceRange": { "default": "26–36" },
+    "referenceLow": 26, "referenceHigh": 36,
+    "unit": "s"
+  },
+  {
+    "codes": ["PLT", "PLQ", "777-3", "R604"],
+    "nameDe": "Thrombozyten",
+    "referenceRange": { "default": "150–300" },
+    "referenceLow": 150, "referenceHigh": 300,
+    "unit": "Tsd/µl"
+  },
+  {
+    "codes": ["FIB", "FBRG"],
+    "nameDe": "Fibrinogen",
+    "referenceRange": { "default": "180–350" },
+    "referenceLow": 180, "referenceHigh": 350,
+    "unit": "mg/dl"
+  },
+  {
+    "codes": ["6690-2", "GB"],
+    "nameDe": "Leukozyten",
+    "referenceRange": { "default": "4.4–11.3", "adult": "4.4–11.3", "infant": "9.4–34.0" },
+    "referenceLow": 4.4, "referenceHigh": 11.3,
+    "unit": "Tsd/µl"
+  },
+  {
+    "codes": ["789-8"],
+    "nameDe": "Erythrozyten",
+    "referenceRange": { "default": "4.1–6.0", "male": "4.5–6.0", "female": "4.1–5.4", "infant": "4.0–6.8" },
+    "referenceLow": 4.1, "referenceHigh": 6.0,
+    "unit": "Mio/µl"
+  },
+  {
+    "codes": ["718-7"],
+    "nameDe": "Hämoglobin",
+    "referenceRange": { "default": "11.5–18.0", "male": "13.5–18.0", "female": "11.5–16.4", "infant": "14–20" },
+    "referenceLow": 11.5, "referenceHigh": 18.0,
+    "unit": "g/dl"
+  },
+  {
+    "codes": ["HCT", "4544-3"],
+    "nameDe": "Hämatokrit",
+    "referenceRange": { "default": "35–48", "male": "36–48", "female": "35–45" },
+    "referenceLow": 35, "referenceHigh": 48,
+    "unit": "%"
+  },
+  {
+    "codes": ["787-2"],
+    "nameDe": "MCV",
+    "referenceRange": { "default": "80–96" },
+    "referenceLow": 80, "referenceHigh": 96,
+    "unit": "fl"
+  },
+  {
+    "codes": ["785-6", "786-4"],
+    "nameDe": "MCH",
+    "referenceRange": { "default": "28–32" },
+    "referenceLow": 28, "referenceHigh": 32,
+    "unit": "pg"
+  },
+  {
+    "codes": ["RET", "RTCYT"],
+    "nameDe": "Retikulozyten",
+    "referenceRange": { "default": "7–15" },
+    "referenceLow": 7, "referenceHigh": 15,
+    "unit": "‰"
+  },
+  {
+    "codes": ["FT3", "183"],
+    "nameDe": "FT3",
+    "referenceRange": { "default": "1.64–3.45" },
+    "referenceLow": 1.64, "referenceHigh": 3.45,
+    "unit": "pg/ml"
+  },
+  {
+    "codes": ["FT4", "184"],
+    "nameDe": "FT4",
+    "referenceRange": { "default": "0.71–1.85" },
+    "referenceLow": 0.71, "referenceHigh": 1.85,
+    "unit": "ng/dl"
+  },
+  {
+    "codes": ["TSHUS", "182"],
+    "nameDe": "TSH basal",
+    "referenceRange": { "default": "0.3–4.0" },
+    "referenceLow": 0.3, "referenceHigh": 4.0,
+    "unit": "mIU/l"
+  },
+  {
+    "codes": ["INSULINE", "200", "INS"],
+    "nameDe": "Insulin",
+    "referenceRange": { "default": "1.6–10.8" },
+    "referenceLow": 1.6, "referenceHigh": 10.8,
+    "unit": "mU/l"
+  },
+  {
+    "codes": ["PSA_TOTAL", "192", "PSAT"],
+    "nameDe": "PSA",
+    "referenceRange": { "default": "<4.0" },
+    "referenceHigh": 4.0,
+    "unit": "ng/ml"
+  },
+  {
+    "codes": ["R426"],
+    "nameDe": "AFP",
+    "referenceRange": { "default": "<11" },
+    "referenceHigh": 11,
+    "unit": "IU/ml"
+  },
+  {
+    "codes": ["CA199"],
+    "nameDe": "CA 19-9",
+    "referenceRange": { "default": "<40" },
+    "referenceHigh": 40,
+    "unit": "IU/ml"
+  },
+  {
+    "codes": ["CRP"],
+    "nameDe": "CRP",
+    "referenceRange": { "default": "<1.0", "male": "<0.5", "female": "<1.0" },
+    "referenceHigh": 1.0,
+    "unit": "mg/dl"
+  },
+  {
+    "codes": ["PCT"],
+    "nameDe": "PCT",
+    "referenceRange": { "default": "<0.5" },
+    "referenceHigh": 0.5,
+    "unit": "ng/ml"
+  },
+  {
+    "codes": ["IGG"],
+    "nameDe": "IgG",
+    "referenceRange": { "default": "700–1600" },
+    "referenceLow": 700, "referenceHigh": 1600,
+    "unit": "mg/dl"
+  },
+  {
+    "codes": ["IGA"],
+    "nameDe": "IgA",
+    "referenceRange": { "default": "70–380" },
+    "referenceLow": 70, "referenceHigh": 380,
+    "unit": "mg/dl"
+  },
+  {
+    "codes": ["IGM"],
+    "nameDe": "IgM",
+    "referenceRange": { "default": "40–280", "male": "40–230", "female": "40–280" },
+    "referenceLow": 40, "referenceHigh": 280,
+    "unit": "mg/dl"
+  },
+  {
+    "codes": ["IGET"],
+    "nameDe": "IgE",
+    "referenceRange": { "default": "<100" },
+    "referenceHigh": 100,
+    "unit": "IU/ml"
+  },
+  {
+    "codes": ["RA"],
+    "nameDe": "Bikarbonat",
+    "referenceRange": { "default": "21–26" },
+    "referenceLow": 21, "referenceHigh": 26,
+    "unit": "mmol/l"
+  }
+]

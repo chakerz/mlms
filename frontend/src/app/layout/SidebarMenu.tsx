@@ -4,7 +4,9 @@ import { useTranslation } from 'react-i18next'
 import {
   LayoutDashboard, Users, ClipboardList, FlaskConical,
   TestTube, FileText, Package, BarChart2, UserCog, BookOpen,
-  AlertTriangle, Globe,
+  AlertTriangle, Globe, Stethoscope, Receipt, CreditCard,
+  Microscope, CalendarDays, Activity, Tag, Archive,
+  Cpu, Send, Inbox, Database,
   type LucideIcon,
 } from 'lucide-react'
 import { useSelector } from 'react-redux'
@@ -24,7 +26,9 @@ import { ScrollArea } from '@/shared/ui/shadcn/scroll-area'
 const ICONS: Record<string, LucideIcon> = {
   LayoutDashboard, Users, ClipboardList, FlaskConical,
   TestTube, FileText, Package, BarChart2, UserCog, BookOpen,
-  AlertTriangle, Globe,
+  AlertTriangle, Globe, Stethoscope, Receipt, CreditCard,
+  Microscope, CalendarDays, Activity, Tag, Archive,
+  Cpu, Send, Inbox, Database,
 }
 
 // Nav-Gruppen für die Sidebar
@@ -66,6 +70,34 @@ const NAV_GROUPS: NavGroup[] = [
     items: [
       { path: '/reagents', labelKey: 'navigation.reagents', icon: 'Package', roles: [UserRole.ADMIN, UserRole.TECHNICIAN] },
       { path: '/inventory', labelKey: 'navigation.inventory', icon: 'BarChart2', roles: [UserRole.ADMIN, UserRole.TECHNICIAN] },
+      { path: '/samples', labelKey: 'navigation.samples', icon: 'Archive', roles: [UserRole.ADMIN, UserRole.TECHNICIAN] },
+      { path: '/sample-inventory', labelKey: 'navigation.sampleInventory', icon: 'FlaskConical', roles: [UserRole.ADMIN, UserRole.TECHNICIAN, UserRole.BIOLOGISTE] },
+    ],
+  },
+  {
+    labelKey: 'navigation.groups.qc',
+    items: [
+      { path: '/qc/materials', labelKey: 'navigation.qcMaterials', icon: 'Microscope', roles: [UserRole.ADMIN, UserRole.TECHNICIAN, UserRole.BIOLOGISTE] },
+      { path: '/qc/schedules', labelKey: 'navigation.qcSchedules', icon: 'CalendarDays', roles: [UserRole.ADMIN, UserRole.TECHNICIAN, UserRole.BIOLOGISTE] },
+      { path: '/qc/results', labelKey: 'navigation.qcResults', icon: 'Activity', roles: [UserRole.ADMIN, UserRole.TECHNICIAN, UserRole.BIOLOGISTE] },
+    ],
+  },
+  {
+    labelKey: 'navigation.groups.financeAdmin',
+    items: [
+      { path: '/practitioners', labelKey: 'navigation.practitioners', icon: 'Stethoscope', roles: [UserRole.ADMIN, UserRole.RECEPTION] },
+      { path: '/invoices', labelKey: 'navigation.invoices', icon: 'Receipt', roles: [UserRole.ADMIN, UserRole.RECEPTION] },
+      { path: '/payments', labelKey: 'navigation.payments', icon: 'CreditCard', roles: [UserRole.ADMIN, UserRole.RECEPTION] },
+      { path: '/pricing-tiers', labelKey: 'navigation.pricingTiers', icon: 'Tag', roles: [UserRole.ADMIN] },
+    ],
+  },
+  {
+    labelKey: 'navigation.groups.instruments',
+    items: [
+      { path: '/instruments', labelKey: 'navigation.instruments', icon: 'Cpu', roles: [UserRole.ADMIN, UserRole.TECHNICIAN] },
+      { path: '/instruments/outbox', labelKey: 'navigation.instrumentOutbox', icon: 'Send', roles: [UserRole.ADMIN, UserRole.TECHNICIAN] },
+      { path: '/instruments/inbox', labelKey: 'navigation.instrumentInbox', icon: 'Inbox', roles: [UserRole.ADMIN, UserRole.TECHNICIAN] },
+      { path: '/instruments/raw-results', labelKey: 'navigation.instrumentRawResults', icon: 'Database', roles: [UserRole.ADMIN, UserRole.TECHNICIAN] },
     ],
   },
   {

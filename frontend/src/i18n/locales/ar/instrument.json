@@ -1,0 +1,119 @@
+{
+  "titleList": "أجهزة التحليل",
+  "titleDetail": "تفاصيل الجهاز",
+  "titleCreate": "جهاز جديد",
+  "titleEdit": "تعديل الجهاز",
+  "code": "الرمز",
+  "name": "الاسم",
+  "manufacturer": "الشركة المصنعة",
+  "model": "الموديل",
+  "protocolType": "البروتوكول",
+  "transportType": "النقل",
+  "directionMode": "الوضع",
+  "location": "الموقع",
+  "isActive": "نشط",
+  "tabs": {
+    "info": "المعلومات",
+    "connection": "الاتصال",
+    "mappings": "تعيين الاختبارات"
+  },
+  "connection": {
+    "title": "إعداد الاتصال",
+    "host": "المضيف / IP",
+    "port": "منفذ TCP",
+    "serialPort": "منفذ تسلسلي",
+    "baudRate": "معدل الباود",
+    "parity": "التكافؤ",
+    "dataBits": "بتات البيانات",
+    "stopBits": "بتات الإيقاف",
+    "fileImportPath": "مسار الاستيراد",
+    "fileExportPath": "مسار التصدير",
+    "ackEnabled": "تفعيل ACK",
+    "encoding": "الترميز",
+    "timeoutMs": "المهلة (ms)",
+    "retryLimit": "الحد الأقصى للمحاولات"
+  },
+  "mapping": {
+    "title": "تعيين رموز الاختبارات",
+    "internalCode": "الرمز الداخلي",
+    "instrumentCode": "رمز الجهاز",
+    "sampleType": "نوع العينة",
+    "specimenCode": "رمز المقتنى",
+    "unit": "الوحدة",
+    "addMapping": "إضافة تعيين"
+  },
+  "outbox": {
+    "title": "الرسائل الصادرة",
+    "specimenId": "المقتنى",
+    "orderId": "الطلب",
+    "status": "الحالة",
+    "retryCount": "المحاولات",
+    "sentAt": "أُرسل",
+    "errorMessage": "الخطأ",
+    "retry": "إعادة المحاولة",
+    "cancel": "إلغاء"
+  },
+  "inbox": {
+    "title": "الرسائل الواردة",
+    "rawPayload": "البيانات الخام",
+    "barcode": "الباركود",
+    "sampleId": "معرف العينة",
+    "matchingStatus": "التطابق",
+    "importStatus": "الاستيراد",
+    "receivedAt": "مستلم",
+    "errorMessage": "الخطأ",
+    "reprocess": "إعادة المعالجة"
+  },
+  "rawResults": {
+    "title": "النتائج الخام",
+    "instrumentTestCode": "رمز الجهاز",
+    "internalTestCode": "الرمز الداخلي",
+    "resultValue": "القيمة",
+    "unit": "الوحدة",
+    "flagCode": "العلامة",
+    "resultStatus": "الحالة",
+    "measuredAt": "تاريخ القياس"
+  },
+  "status": {
+    "PENDING": "في الانتظار",
+    "READY_TO_SEND": "جاهز للإرسال",
+    "SENT": "مُرسل",
+    "ACK_RECEIVED": "تم استلام ACK",
+    "FAILED": "فشل",
+    "RETRY_SCHEDULED": "إعادة محاولة مجدولة",
+    "CANCELLED": "ملغى",
+    "RECEIVED": "مستلم",
+    "PARSED": "محلل",
+    "MATCHED": "متطابق",
+    "IMPORTED": "مستورد",
+    "PARTIALLY_IMPORTED": "مستورد جزئياً",
+    "ERROR": "خطأ",
+    "IGNORED": "مُتجاهل",
+    "UNMATCHED": "غير متطابق",
+    "MATCHED_BY_SAMPLE_ID": "بمعرف العينة",
+    "MATCHED_BY_BARCODE": "بالباركود",
+    "MATCHED_BY_FALLBACK_RULE": "بالقاعدة الاحتياطية",
+    "AMBIGUOUS": "غامض",
+    "RAW_RECEIVED": "خام مستلم",
+    "MAPPED": "معيَّن",
+    "PENDING_REVIEW": "في انتظار المراجعة",
+    "ACCEPTED_TECHNICALLY": "مقبول تقنياً",
+    "REJECTED_TECHNICALLY": "مرفوض تقنياً",
+    "FOR_VALIDATION": "للتحقق",
+    "VALIDATED": "محقق"
+  },
+  "protocol": {
+    "ASTM": "ASTM",
+    "HL7": "HL7",
+    "PROPRIETARY": "خاص بالمورد"
+  },
+  "transport": {
+    "TCP": "TCP",
+    "SERIAL": "تسلسلي",
+    "FILE_SYSTEM": "نظام الملفات"
+  },
+  "direction": {
+    "UNIDIRECTIONAL": "أحادي الاتجاه",
+    "BIDIRECTIONAL": "ثنائي الاتجاه"
+  }
+}

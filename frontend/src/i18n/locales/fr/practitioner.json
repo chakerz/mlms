@@ -1,0 +1,36 @@
+{
+  "title": {
+    "list": "Praticiens",
+    "create": "Ajouter un praticien",
+    "edit": "Modifier le praticien",
+    "detail": "Fiche praticien"
+  },
+  "searchPlaceholder": "Rechercher un praticien...",
+  "form": {
+    "fullName": "Nom complet",
+    "email": "E-mail",
+    "phoneNumber": "Téléphone",
+    "address": "Adresse",
+    "speciality": "Spécialité",
+    "qualification": "Qualification",
+    "licenseNumber": "N° d'autorisation",
+    "isActive": "Actif"
+  },
+  "status": {
+    "active": "Actif",
+    "inactive": "Inactif"
+  },
+  "actions": {
+    "create": "Ajouter un praticien",
+    "update": "Mettre à jour",
+    "save": "Enregistrer",
+    "edit": "Modifier"
+  },
+  "messages": {
+    "created": "Praticien créé avec succès",
+    "updated": "Praticien mis à jour avec succès",
+    "notFound": "Praticien introuvable",
+    "createError": "Erreur lors de la création du praticien",
+    "updateError": "Erreur lors de la mise à jour du praticien"
+  }
+}

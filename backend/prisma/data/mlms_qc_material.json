@@ -1,0 +1,34 @@
+{
+    "currentPage": 1,
+    "totalPages": 1,
+    "totalCount": 2,
+    "items": [
+        {
+            "id": "019a54b9-c49a-73b9-abd0-9ab612fbec35",
+            "barcode": "1202357973220545",
+            "name": "material hdl",
+            "lotNumber": "HDL-2025-11",
+            "manufacturer": "Bio-Rad",
+            "expirationDate": "2026-02-28T00:00:00Z",
+            "expectedValue": 5.2000,
+            "standardDeviation": 0.1000,
+            "isActive": true,
+            "createdAt": "2025-11-05T15:54:11.992833Z",
+            "updatedAt": "2026-02-15T12:14:02.524957Z"
+        },
+        {
+            "id": "019a4ef0-0051-74b1-8c99-09f579b74499",
+            "barcode": "1202260255325661",
+            "name": "QC Biochimie – Niv 1",
+            "lotNumber": "GLU-2025-L01",
+            "manufacturer": "Bio-Rad",
+            "expirationDate": "2025-11-04T12:44:15.339Z",
+            "expectedValue": 5.0000,
+            "standardDeviation": 0.2000,
+            "isActive": true,
+            "createdAt": "2025-11-04T12:55:42.921851Z",
+            "updatedAt": "2025-11-04T12:55:51.845577Z"
+        }
+    ],
+    "statistics": null
+}

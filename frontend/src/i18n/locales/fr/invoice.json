@@ -1,0 +1,52 @@
+{
+  "title": {
+    "list": "Factures",
+    "create": "Créer une facture",
+    "detail": "Détail de la facture"
+  },
+  "form": {
+    "invoiceNumber": "N° Facture",
+    "customerName": "Nom du client",
+    "customerAddress": "Adresse client",
+    "customerEmail": "E-mail client",
+    "customerPhone": "Téléphone client",
+    "invoiceDate": "Date de facturation",
+    "dueDate": "Date d'échéance",
+    "paymentTerms": "Conditions de paiement",
+    "subtotal": "Sous-total",
+    "totalDiscount": "Remise totale",
+    "totalTax": "TVA totale",
+    "total": "Total TTC",
+    "amountPaid": "Montant payé",
+    "balanceDue": "Reste à payer",
+    "billingCodes": "Codes de facturation",
+    "comments": "Commentaires"
+  },
+  "status": {
+    "DRAFT": "Brouillon",
+    "PENDING": "En attente",
+    "PAID": "Payé",
+    "OVERDUE": "En retard",
+    "CANCELLED": "Annulé"
+  },
+  "lines": {
+    "title": "Lignes de facturation",
+    "description": "Description",
+    "quantity": "Qté",
+    "unitPrice": "Prix unitaire",
+    "taxRate": "TVA",
+    "lineTotal": "Total ligne"
+  },
+  "payments": {
+    "title": "Paiements associés"
+  },
+  "actions": {
+    "create": "Créer une facture",
+    "updateStatus": "Modifier le statut"
+  },
+  "messages": {
+    "notFound": "Facture introuvable",
+    "createError": "Erreur lors de la création de la facture",
+    "updateError": "Erreur lors de la mise à jour de la facture"
+  }
+}

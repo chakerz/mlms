@@ -1,16 +1,20 @@
+import { useState } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
-import { ArrowLeft, FlaskConical } from 'lucide-react'
+import { ArrowLeft, FlaskConical, Send } from 'lucide-react'
 import { Card } from '@/shared/ui/Card'
 import { Button } from '@/shared/ui/Button'
 import { Badge } from '@/shared/ui/Badge'
 import { Alert } from '@/shared/ui/Alert'
 import { PageLoader } from '@/shared/ui/Loader'
-import { ConfirmDialog } from '@/shared/ui/Modal'
+import { ConfirmDialog, Modal } from '@/shared/ui/Modal'
 import { useDisclosure } from '@/shared/hooks/useDisclosure'
 import { useGetOrderQuery, useUpdateOrderStatusMutation, useCancelOrderMutation } from '@/features/order/api/orderApi'
 import { useGetPatientQuery } from '@/features/patient/api/patientApi'
+import { useGetInstrumentsQuery, useSendOrderToInstrumentMutation } from '@/features/instrument/api/instrumentApi'
 import { formatDateTime, formatDate } from '@/shared/utils/formatDate'
+import { SelectItem } from '@/shared/ui/Select'
+import { Select, SelectContent, SelectTrigger, SelectValue } from '@/shared/ui/shadcn/select'
 
 function PatientName({ patientId }: { patientId: string }) {
   const { data } = useGetPatientQuery(patientId)
@@ -44,9 +48,34 @@ export function OrderDetailPage() {
   const { t } = useTranslation(['order', 'statuses', 'common'])
   const navigate = useNavigate()
   const cancelDialog = useDisclosure()
+  const analyzerDialog = useDisclosure()
+  const [selectedInstrumentId, setSelectedInstrumentId] = useState('')
+  const [sendFeedback, setSendFeedback] = useState<{ type: 'success' | 'error'; message: string } | null>(null)
   const { data: order, isLoading, isError } = useGetOrderQuery(id!)
   const [updateStatus, { isLoading: isUpdating }] = useUpdateOrderStatusMutation()
   const [cancelOrder, { isLoading: isCancelling }] = useCancelOrderMutation()
+  const { data: instruments } = useGetInstrumentsQuery({ isActive: true, pageSize: 100 })
+  const [sendOrderToInstrument, { isLoading: isSending }] = useSendOrderToInstrumentMutation()
+
+  const handleSendToAnalyzer = async () => {
+    if (!selectedInstrumentId || !id) return
+    setSendFeedback(null)
+    try {
+      const result = await sendOrderToInstrument({ instrumentId: selectedInstrumentId, orderId: id }).unwrap()
+      if (!result.sent) {
+        setSendFeedback({ type: 'error', message: result.error || t('order:messages.sendFailed') })
+      } else {
+        setSendFeedback({
+          type: 'success',
+          message: `${t('order:messages.sentToAnalyzer')} (${result.resultCount} ${t('order:messages.results')})`,
+        })
+      }
+      analyzerDialog.close()
+    } catch {
+      setSendFeedback({ type: 'error', message: t('order:messages.sendFailed') })
+      analyzerDialog.close()
+    }
+  }
 
   if (isLoading) return <PageLoader />
   if (isError || !order) return <Alert variant="error" message={t('order:messages.notFound')} />
@@ -77,6 +106,10 @@ export function OrderDetailPage() {
           <Button variant="secondary" size="sm" onClick={() => navigate(`/orders/${id}/specimens`)}>
             <FlaskConical size={15} className="me-1" />
             {t('common:navigation.specimens')}
+          </Button>
+          <Button variant="secondary" size="sm" onClick={analyzerDialog.open}>
+            <Send size={15} className="me-1" />
+            {t('order:actions.sendToAnalyzer')}
           </Button>
           {canCancel && (
             <Button variant="secondary" size="sm" onClick={cancelDialog.open}>
@@ -147,6 +180,48 @@ export function OrderDetailPage() {
         message={t('order:messages.cancelConfirm')}
         isLoading={isCancelling}
       />
+
+      <Modal
+        open={analyzerDialog.isOpen}
+        onClose={analyzerDialog.close}
+        title={t('order:actions.sendToAnalyzer')}
+        size="sm"
+        footer={
+          <div className="flex gap-2 justify-end">
+            <Button variant="secondary" size="sm" onClick={analyzerDialog.close}>
+              {t('common:actions.cancel')}
+            </Button>
+            <Button size="sm" onClick={handleSendToAnalyzer} loading={isSending} disabled={!selectedInstrumentId}>
+              <Send size={14} className="me-1" />
+              {t('order:actions.send')}
+            </Button>
+          </div>
+        }
+      >
+        <div className="space-y-3 py-1">
+          <p className="text-sm text-neutral-600">{t('order:messages.selectAnalyzer')}</p>
+          <Select value={selectedInstrumentId} onValueChange={setSelectedInstrumentId}>
+            <SelectTrigger className="w-full">
+              <SelectValue placeholder={t('order:form.selectInstrument')} />
+            </SelectTrigger>
+            <SelectContent>
+              {instruments?.data.map((inst) => (
+                <SelectItem key={inst.id} value={inst.id}>
+                  {inst.code === 'SIM_CHEM_01' ? '🧪 ' : ''}{inst.name}
+                  {inst.model ? ` (${inst.model})` : ''}
+                  {' — '}{inst.code}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+      </Modal>
+
+      {sendFeedback && (
+        <div className="fixed bottom-4 end-4 z-50">
+          <Alert variant={sendFeedback.type === 'success' ? 'success' : 'error'} message={sendFeedback.message} />
+        </div>
+      )}
     </div>
   )
 }

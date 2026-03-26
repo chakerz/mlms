@@ -1,0 +1,24 @@
+{
+  "titleList": "كتالوج العينات",
+  "code": "الرمز",
+  "type": "النوع",
+  "container": "الحاوية",
+  "storage": "شروط الحفظ",
+  "inventory": {
+    "title": "مخزون العينات",
+    "barcode": "الرمز الشريطي",
+    "inventoryCode": "رمز المخزون",
+    "location": "الموقع",
+    "quantity": "الكمية",
+    "qcPending": "QC معلق",
+    "expirationDate": "الانتهاء",
+    "receptionDate": "الاستلام",
+    "status": {
+      "RECEIVED": "مستلم",
+      "IN_STORAGE": "في المخزن",
+      "IN_USE": "قيد الاستخدام",
+      "DISPOSED": "مُتخلص منه",
+      "EXPIRED": "منتهي الصلاحية"
+    }
+  }
+}

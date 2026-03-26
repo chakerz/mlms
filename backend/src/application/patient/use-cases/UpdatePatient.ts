@@ -23,6 +23,12 @@ export class UpdatePatient {
       dto.address !== undefined ? dto.address : existing.address,
       existing.createdAt,
       new Date(),
+      dto.bloodType !== undefined ? dto.bloodType : existing.bloodType,
+      dto.allergies !== undefined ? dto.allergies : existing.allergies,
+      dto.emergencyContactName !== undefined ? dto.emergencyContactName : existing.emergencyContactName,
+      dto.emergencyContactPhone !== undefined ? dto.emergencyContactPhone : existing.emergencyContactPhone,
+      dto.healthInsuranceNumber !== undefined ? dto.healthInsuranceNumber : existing.healthInsuranceNumber,
+      dto.pricingTierId !== undefined ? dto.pricingTierId : existing.pricingTierId,
     );
 
     const saved = await this.patientRepository.save(updated);
@@ -39,6 +45,12 @@ export class UpdatePatient {
       phone: patient.phone,
       email: patient.email,
       address: patient.address,
+      bloodType: patient.bloodType,
+      allergies: patient.allergies,
+      emergencyContactName: patient.emergencyContactName,
+      emergencyContactPhone: patient.emergencyContactPhone,
+      healthInsuranceNumber: patient.healthInsuranceNumber,
+      pricingTierId: patient.pricingTierId,
       createdAt: patient.createdAt.toISOString(),
       updatedAt: patient.updatedAt.toISOString(),
     };

@@ -14,6 +14,12 @@
     "phone": "Téléphone",
     "email": "E-mail",
     "address": "Adresse",
+    "bloodType": "Groupe sanguin",
+    "allergies": "Allergies",
+    "emergencyContactName": "Contact urgence – Nom",
+    "emergencyContactPhone": "Contact urgence – Tél.",
+    "healthInsuranceNumber": "N° assurance maladie",
+    "pricingTierId": "Niveau tarifaire",
     "createdAt": "Enregistré le"
   },
   "gender": {

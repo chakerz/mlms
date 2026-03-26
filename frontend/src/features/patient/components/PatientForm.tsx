@@ -14,6 +14,11 @@ const patientSchema = z.object({
   phone: z.string().optional(),
   email: z.string().email().optional().or(z.literal('')),
   address: z.string().optional(),
+  bloodType: z.string().optional(),
+  allergies: z.string().optional(),
+  emergencyContactName: z.string().optional(),
+  emergencyContactPhone: z.string().optional(),
+  healthInsuranceNumber: z.string().optional(),
 })
 
 export type PatientFormValues = z.infer<typeof patientSchema>
@@ -87,6 +92,36 @@ export function PatientForm({ defaultValues, onSubmit, isLoading }: PatientFormP
         error={errors.address?.message}
         {...register('address')}
       />
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <Input
+          label={t('form.bloodType')}
+          error={errors.bloodType?.message}
+          {...register('bloodType')}
+        />
+        <Input
+          label={t('form.healthInsuranceNumber')}
+          error={errors.healthInsuranceNumber?.message}
+          {...register('healthInsuranceNumber')}
+        />
+      </div>
+      <Input
+        label={t('form.allergies')}
+        error={errors.allergies?.message}
+        {...register('allergies')}
+      />
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <Input
+          label={t('form.emergencyContactName')}
+          error={errors.emergencyContactName?.message}
+          {...register('emergencyContactName')}
+        />
+        <Input
+          label={t('form.emergencyContactPhone')}
+          type="tel"
+          error={errors.emergencyContactPhone?.message}
+          {...register('emergencyContactPhone')}
+        />
+      </div>
       <div className="flex justify-end">
         <Button type="submit" loading={isLoading}>
           {t('actions.save')}

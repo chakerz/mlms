@@ -1,5 +1,7 @@
-import { PrismaClient, UserRole, Language, Gender, ReagentCategory } from '@prisma/client';
+import { PrismaClient, UserRole, Language, Gender, ReagentCategory, QCScheduleStatus, QCResultStatus, QCAlert, SampleInventoryStatus, InstrumentProtocolType, InstrumentTransportType, InstrumentDirectionMode } from '@prisma/client';
 import * as bcrypt from 'bcrypt';
+import * as fs from 'fs';
+import * as path from 'path';
 
 const prisma = new PrismaClient();
 
@@ -12,6 +14,10 @@ async function hash(password: string): Promise<string> {
 // ─── Clear DB ─────────────────────────────────────────────────────────────────
 
 async function clearDatabase() {
+  await prisma.payment.deleteMany({});
+  await prisma.invoiceLine.deleteMany({});
+  await prisma.invoice.deleteMany({});
+  await prisma.practitioner.deleteMany({});
   await prisma.auditEntry.deleteMany({});
   await prisma.report.deleteMany({});
   await prisma.result.deleteMany({});
@@ -20,10 +26,25 @@ async function clearDatabase() {
   await prisma.testOrder.deleteMany({});
   await prisma.order.deleteMany({});
   await prisma.patient.deleteMany({});
+  await prisma.pricingTier.deleteMany({});
+  await prisma.qCResult.deleteMany({});
+  await prisma.qCSchedule.deleteMany({});
+  await prisma.qCMaterial.deleteMany({});
+  await prisma.sampleInventoryLine.deleteMany({});
+  await prisma.sample.deleteMany({});
   await prisma.reagentLot.deleteMany({});
   await prisma.reagent.deleteMany({});
   await prisma.storageLocation.deleteMany({});
   await prisma.testDefinition.deleteMany({});
+  await prisma.testPanel.deleteMany({});
+  // Instrument tables (ordre: dépendants en premier)
+  await prisma.instrumentMessageAudit.deleteMany({});
+  await prisma.instrumentRawResult.deleteMany({});
+  await prisma.instrumentResultInbox.deleteMany({});
+  await prisma.instrumentOrderOutbox.deleteMany({});
+  await prisma.instrumentTestMapping.deleteMany({});
+  await prisma.instrumentConnection.deleteMany({});
+  await prisma.instrument.deleteMany({});
   await prisma.user.deleteMany({});
   console.log('  ✓ database cleared');
 }
@@ -62,6 +83,12 @@ async function seedUsers() {
       role: UserRole.BIOLOGISTE,
       language: Language.FR,
     },
+    {
+      email: 'simulator@mlms.local',
+      password: 'Sim1234!',
+      role: UserRole.TECHNICIAN,
+      language: Language.FR,
+    },
   ];
 
   for (const u of users) {
@@ -81,303 +108,251 @@ async function seedUsers() {
   console.log(`  ✓ ${users.length} users seeded`);
 }
 
-// ─── Test Definitions — Catalogue bilingue ────────────────────────────────────
-// Source: catalogue_exams_bilingual.csv (174 examens)
-// Code généré par slugification du nom FR (ASCII, majuscules, max 50 chars)
-// Catégories assignées par correspondance médicale (BIOCHEMISTRY par défaut)
-// Upsert idempotent sur code (unique key)
+// ─── Test Definitions — Import depuis mlms_tests.json ─────────────────────────
+
+type JsonTestItem = {
+  id: string;
+  name: string;
+  code: string;
+  alias: string;
+  testPanelId: string;
+  testPanelName: string;
+  testPanelOrder: number;
+  testPanelParentName: string | null;
+  testPanelParentOrder: number | null;
+  sampleId: string | null;
+  units: string;
+  secondaryUnits: string;
+  referenceRange: string;
+  secondaryReferenceRange: string;
+  criticalLow: string;
+  criticalHigh: string;
+  testComments: string;
+  testInterpretation: string;
+  loincCode: string;
+  price: number;
+  cost: number;
+  requiresFasting: boolean;
+  isActive: boolean;
+  turnaroundTimeMinutes: number;
+  calculationFormula: string;
+  analyticalInstrument: string;
+  reportingTime: string;
+};
+
+function parseReferenceRange(raw: string): object | null {
+  if (!raw) return null;
+  try {
+    return JSON.parse(raw);
+  } catch {
+    return { default: raw };
+  }
+}
+
+const CATEGORY_MAP: Record<string, string> = {
+  // Biochimie
+  'BIOCHIMIE': 'BIOCHEMISTRY',
+  'BIOCHIMIE SANGUINE COBAS C311': 'BIOCHEMISTRY',
+  'BIOCHIMIE URINAIRE': 'BIOCHEMISTRY',
+  'CREATININEMIE': 'BIOCHEMISTRY',
+  'GLYCEMIE': 'BIOCHEMISTRY',
+  'IONOGRAMME SANGUIN': 'BIOCHEMISTRY',
+  'BILAN HÉPATIQUE': 'BIOCHEMISTRY',
+  'BILAN LIPIDIQUE': 'BIOCHEMISTRY',
+  'TOXICOLOGIE': 'BIOCHEMISTRY',
+  // Hématologie
+  'HEMATOLOGIE': 'HEMATOLOGY',
+  'NUMERATION FORMULE SANGUINE MINDRAY BC5000': 'HEMATOLOGY',
+  'NUMERATION FORMULE SANGUINE MINDRAY BC780': 'HEMATOLOGY',
+  'GROUPAGE SANGUIN': 'HEMATOLOGY',
+  'HEMOCULTURE': 'HEMATOLOGY',
+  'ÉLECTROPHORÈSE DE L\'HÉMOGLOBINE': 'HEMATOLOGY',
+  // Hémostase
+  'HEMOSTASE': 'HEMOSTASIS',
+  'BILAN DE COAGULATION': 'HEMOSTASIS',
+  'TCA COAGULATION': 'HEMOSTASIS',
+  'BANQUE SANG': 'HEMOSTASIS',
+  // Hormonologie
+  'HORMONOLOGIE': 'HORMONOLOGY',
+  'HORMONOLOGIE COBAS E411': 'HORMONOLOGY',
+  // Microbiologie / Bactériologie
+  'BACTÉRIOLOGIE': 'MICROBIOLOGY',
+  'ANTIBIOGRAMME': 'MICROBIOLOGY',
+  'ANTIBIOGRAMME VITEK 2 ANTIBIOTIQUES': 'MICROBIOLOGY',
+  'ANTIBIOGRAMME VITEK 2 ORGANISMES': 'MICROBIOLOGY',
+  'BACTERIOLOGIE DES SELLES': 'MICROBIOLOGY',
+  'BACTERIOLOGIE DES URINES': 'MICROBIOLOGY',
+  'BACTÉRIO-PARA-MYCO': 'MICROBIOLOGY',
+  'BANDELETTE URINAIRE': 'MICROBIOLOGY',
+  'COPROCULTURE': 'MICROBIOLOGY',
+  'EXAMEN MYCOLOGIQUE': 'MICROBIOLOGY',
+  'EXAMEN PARASITOLOGIQUE': 'MICROBIOLOGY',
+  'SPERMOCULTURE': 'MICROBIOLOGY',
+  'RECHERCHE DE PLASMODIUM PALUDISME': 'MICROBIOLOGY',
+  'RECHERCHE DE MYCOPLASMES URO GENITAUX': 'MICROBIOLOGY',
+  'RECHERCHE DE BACILLES ACIDO ALCALINO RESISTANTS BAAR BACILLES DE KOCH': 'MICROBIOLOGY',
+  // Biologie moléculaire / PCR
+  'RECHERCHE DE PATHOGENES GENITAUX PAR AMPLIFICATION GENIQUE': 'MOLECULAR_BIOLOGY',
+  'RECHERCHE DE LADN DE CHLAMYDIA TRACHOMATIS ET DE NEISSERIA GONORRHOEAE PAR PCR': 'MOLECULAR_BIOLOGY',
+  // Sérologie / Immunologie
+  'SEROLOGIE AUTOIMMUNES': 'IMMUNOLOGY',
+  'SEROLOGIE ANTIPHOSPHOLIPIDES': 'IMMUNOLOGY',
+  'SEROLOGIE MALADIE COELIAQUE': 'IMMUNOLOGY',
+  'IMMUNOLOGIE': 'IMMUNOLOGY',
+  'IMMUNOTHERAPIE': 'IMMUNOLOGY',
+  'SEROLOGIE HEPATITES': 'SEROLOGY',
+  'SEROLOGIE HIV': 'SEROLOGY',
+  'SEROLOGIE STREPTOCOCCIQUE': 'SEROLOGY',
+  'SEROLOGIE PARASITAIRES': 'SEROLOGY',
+  'SEROLOGIE VIRALES': 'SEROLOGY',
+  'SEROLOGIE COVID 19': 'SEROLOGY',
+  'VIROLOGIE': 'SEROLOGY',
+  // Allergologie
+  'SEROLOGIE IMMUNOLOGIE ALLERGIE': 'ALLERGOLOGY',
+  // Marqueurs tumoraux
+  'MARQUEURS TUMORAUX': 'TUMOR_MARKERS',
+  // Cytologie / Anapath
+  'CYTOLOGIE': 'CYTOGENETICS',
+  'HISTOLOGIE': 'CYTOGENETICS',
+  'ANATOMOPATHOLOGIE': 'CYTOGENETICS',
+};
+
+function mapCategory(parentName: string | null, panelName: string): string {
+  if (parentName && CATEGORY_MAP[parentName]) return CATEGORY_MAP[parentName];
+  if (CATEGORY_MAP[panelName]) return CATEGORY_MAP[panelName];
+  return 'BIOCHEMISTRY';
+}
 
 async function seedTestDefinitions() {
-  type CatalogueEntry = {
-    code: string;
-    category: string;
-    nameFr: string;
-    nameAr: string;
-    synonymes: string | null;
-    sampleTypeFr: string | null;
-    sampleTypeAr: string | null;
-    tubeFr: string | null;
-    tubeAr: string | null;
-    method: string | null;
-    collectionConditionFr: string | null;
-    collectionConditionAr: string | null;
-    preAnalyticDelay: string | null;
-    preAnalyticDelayAr?: string | null;
-    turnaroundTime: string | null;
-    turnaroundTimeAr?: string | null;
-  };
-  const delayTranslations: Record<string, string> = {
-    '1 jour': 'يوم واحد',
-    '2 h AMB / 1 jour (4°C)': 'ساعتان في درجة الغرفة / يوم واحد (4°C)',
-    '2 h TA / 1 jour (4°C)': 'ساعتان في درجة الغرفة / يوم واحد (4°C)',
-    '2 heures': 'ساعتان',
-    '24 h TA / <5 jours réfrigéré': '24 ساعة في درجة الغرفة / أقل من 5 أيام مبردًا',
-    '24 heures': '24 ساعة',
-    '24 heures TA': '24 ساعة في درجة الغرفة',
-    '4 heures': '4 ساعات',
-    '48 h TA / <5 jours réfrigéré': '48 ساعة في درجة الغرفة / أقل من 5 أيام مبردًا',
-    '6 h': '6 ساعات',
-    '6 heures': '6 ساعات',
-    '8 heures': '8 ساعات',
-    '<12 h 2-8°C / <2 h TA': 'أقل من 12 ساعة (2-8°C) / أقل من ساعتين في درجة الغرفة',
-    '<2 h TA': 'أقل من ساعتين في درجة الغرفة',
-    '<24 h 2-8°C / <2 h TA': 'أقل من 24 ساعة (2-8°C) / أقل من ساعتين في درجة الغرفة',
-    '<24 h à 2-8°C / <12 h TA / (<4 h TA si recherche formes végétatives)': 'أقل من 24 ساعة (2-8°C) / أقل من 12 ساعة في درجة الغرفة / (أقل من 4 ساعات عند البحث عن الأشكال الخضرية)',
-    '<4 h TA': 'أقل من 4 ساعات في درجة الغرفة',
-    '<4 h TA / <24 h 2-8°C': 'أقل من 4 ساعات في درجة الغرفة / أقل من 24 ساعة (2-8°C)',
-    '<48 h TA': 'أقل من 48 ساعة في درجة الغرفة',
-    '<6 semaines': 'أقل من 6 أسابيع',
-    '<7 jours 2-8°C': 'أقل من 7 أيام (2-8°C)',
-    '<72 h réfrigéré / <2 h TA': 'أقل من 72 ساعة مبردًا / أقل من ساعتين في درجة الغرفة',
-    'Dès que possible / <12 h TA': 'في أقرب وقت ممكن / أقل من 12 ساعة في درجة الغرفة',
-    'Dès que possible / <24h TA ou réfrigéré': 'في أقرب وقت ممكن / أقل من 24 ساعة في درجة الغرفة أو مبردًا',
-    'Plusieurs jours': 'عدة أيام',
-  };
-  const tatTranslations: Record<string, string> = {
-    '1 j': 'يوم واحد',
-    '1 jour': 'يوم واحد',
-    '1 jour (AVK) / 1 jour': 'يوم واحد (مضادات التخثر) / يوم واحد',
-    '2 j': 'يومان',
-    '2 jours': 'يومان',
-    '28 jours': '28 يومًا',
-    '3 h': '3 ساعات',
-    '3 jours': '3 أيام',
-    '4 h': '4 ساعات',
-    '4 jours': '4 أيام',
-    '5 jours': '5 أيام',
-    '7 jours': '7 أيام',
-  };
-  const catalogue: CatalogueEntry[] = [
-    { code: 'ACE_ANTIGENE_CARCINO_EMBRYONNAIRE', category: 'TUMOR_MARKERS', nameFr: 'ACE - Antigène Carcino-Embryonnaire', nameAr: 'ACE - المستضد السرطاني المضغي', synonymes: 'ACE', sampleTypeFr: 'Sang', sampleTypeAr: 'دم', tubeFr: 'SEC', tubeAr: 'أنبوب جاف', method: 'Chimiluminescence (CMIA)', collectionConditionFr: null, collectionConditionAr: null, preAnalyticDelay: '1 jour', turnaroundTime: '1 jour' },
-    { code: 'ACETONURIE', category: 'BIOCHEMISTRY', nameFr: 'Acétonurie', nameAr: 'أسيتون البول', synonymes: null, sampleTypeFr: 'Urine', sampleTypeAr: 'بول', tubeFr: 'Urines échantillon', tubeAr: 'عينة بول', method: 'Colorimétrie manuelle', collectionConditionFr: 'Conserver réfrigéré', collectionConditionAr: 'يُحفظ مبردًا', preAnalyticDelay: '2 h TA / 1 jour (4°C)', turnaroundTime: '1 jour' },
-    { code: 'ACIDE_URIQUE', category: 'BIOCHEMISTRY', nameFr: 'Acide urique', nameAr: 'حمض اليوريك', synonymes: 'Uricémie', sampleTypeFr: 'Sang', sampleTypeAr: 'دم', tubeFr: 'SEC', tubeAr: 'أنبوب جاف', method: 'Colorimétrie enzymatique', collectionConditionFr: null, collectionConditionAr: null, preAnalyticDelay: '1 jour', turnaroundTime: '1 jour' },
-    { code: 'ACIDE_URIQUE_URINAIRE', category: 'BIOCHEMISTRY', nameFr: 'Acide urique urinaire', nameAr: 'حمض اليوريك في البول', synonymes: null, sampleTypeFr: 'Urine', sampleTypeAr: 'بول', tubeFr: 'Urines échantillon', tubeAr: 'عينة بول', method: 'Colorimétrie enzymatique', collectionConditionFr: null, collectionConditionAr: null, preAnalyticDelay: '1 jour', turnaroundTime: '1 jour' },
-    { code: 'ACIDE_URIQUE_URINAIRE_DES_24_HEURES', category: 'BIOCHEMISTRY', nameFr: 'Acide urique urinaire des 24 heures', nameAr: 'حمض اليوريك في بول 24 ساعة', synonymes: null, sampleTypeFr: 'Urine', sampleTypeAr: 'بول', tubeFr: 'Urines 24h', tubeAr: 'بول 24 ساعة', method: 'Colorimétrie enzymatique', collectionConditionFr: null, collectionConditionAr: null, preAnalyticDelay: '1 jour', turnaroundTime: '1 jour' },
-    { code: 'ACIDE_VALPROIQUE', category: 'BIOCHEMISTRY', nameFr: 'Acide valproïque', nameAr: 'حمض الفالبرويك', synonymes: 'DEPAKINE / DEPAKOTE', sampleTypeFr: 'Sang', sampleTypeAr: 'دم', tubeFr: 'SEC', tubeAr: 'أنبوب جاف', method: null, collectionConditionFr: null, collectionConditionAr: null, preAnalyticDelay: '1 jour', turnaroundTime: '1 jour' },
-    { code: 'ACTH_CORTICOTROPHINE', category: 'HORMONOLOGY', nameFr: 'ACTH - corticotrophine', nameAr: 'ACTH - الهرمون الموجه لقشر الكظر', synonymes: 'ACTH', sampleTypeFr: 'Sang', sampleTypeAr: 'دم', tubeFr: 'PLASMA EDTA + APROTININE', tubeAr: 'بلازما EDTA + أبروتينين', method: null, collectionConditionFr: 'A prélever selon prescription; domicile déconseillé <2h TA', collectionConditionAr: 'يُسحب حسب الوصفة؛ السحب المنزلي غير مستحسن؛ أقل من ساعتين بحرارة الغرفة', preAnalyticDelay: '2 heures', turnaroundTime: '1 jour' },
-    { code: 'ALAT', category: 'BIOCHEMISTRY', nameFr: 'ALAT', nameAr: 'ALAT', synonymes: 'Transaminases / SGPT', sampleTypeFr: 'Sang', sampleTypeAr: 'دم', tubeFr: 'SEC', tubeAr: 'أنبوب جاف', method: 'Spectrophotométrie', collectionConditionFr: null, collectionConditionAr: null, preAnalyticDelay: '1 jour', turnaroundTime: '1 jour' },
-    { code: 'ALBUMINE_SERIQUE', category: 'BIOCHEMISTRY', nameFr: 'Albumine sérique', nameAr: 'ألبومين المصل', synonymes: null, sampleTypeFr: 'Sang', sampleTypeAr: 'دم', tubeFr: 'SEC', tubeAr: 'أنبوب جاف', method: 'Colorimétrie', collectionConditionFr: null, collectionConditionAr: null, preAnalyticDelay: '1 jour', turnaroundTime: '1 jour' },
-    { code: 'ALPHA_FOETOPROTEINE', category: 'TUMOR_MARKERS', nameFr: 'Alpha-foetoprotéine', nameAr: 'ألفا فيتو بروتين', synonymes: 'AFP', sampleTypeFr: 'Sang', sampleTypeAr: 'دم', tubeFr: 'SEC', tubeAr: 'أنبوب جاف', method: null, collectionConditionFr: null, collectionConditionAr: null, preAnalyticDelay: '1 jour', turnaroundTime: '2 jours' },
-    { code: 'ANTICORPS_ANTI_THYROGLOBULINE', category: 'IMMUNOLOGY', nameFr: 'Anticorps anti-thyroglobuline', nameAr: 'الأجسام المضادة للثيروغلوبولين', synonymes: 'ATHY, ATG', sampleTypeFr: 'Sang', sampleTypeAr: 'دم', tubeFr: 'SEC', tubeAr: 'أنبوب جاف', method: 'Chimiluminescence (CMIA)', collectionConditionFr: null, collectionConditionAr: null, preAnalyticDelay: '1 jour', turnaroundTime: '1 jour' },
-    { code: 'ANTICORPS_ANTI_THYROPEROXYDASE', category: 'IMMUNOLOGY', nameFr: 'Anticorps anti-thyroperoxydase', nameAr: 'الأجسام المضادة لثيروبيروكسيداز', synonymes: 'ATPO', sampleTypeFr: 'Sang', sampleTypeAr: 'دم', tubeFr: 'SEC', tubeAr: 'أنبوب جاف', method: 'Chimiluminescence (CMIA)', collectionConditionFr: null, collectionConditionAr: null, preAnalyticDelay: '1 jour', turnaroundTime: '1 jour' },
-    { code: 'ANTICORPS_ANTI_PEPTIDES_CYCLIQUES_CITRULLINES_CCP_', category: 'IMMUNOLOGY', nameFr: 'Anticorps anti-peptides cycliques citrullinés (CCP-2)', nameAr: 'الأجسام المضادة للببتيدات الحلقية السيترولينية (CCP-2)', synonymes: 'ACCP, ACPA', sampleTypeFr: 'Sang', sampleTypeAr: 'دم', tubeFr: 'SEC', tubeAr: 'أنبوب جاف', method: 'Chimiluminescence (CMIA)', collectionConditionFr: null, collectionConditionAr: null, preAnalyticDelay: '1 jour', turnaroundTime: '1 jour' },
-    { code: 'APO_A1', category: 'BIOCHEMISTRY', nameFr: 'Apo A1', nameAr: 'أبوليبوبروتين A1', synonymes: null, sampleTypeFr: 'Sang', sampleTypeAr: 'دم', tubeFr: 'SEC', tubeAr: 'أنبوب جاف', method: 'Immunoturbidimétrie', collectionConditionFr: 'A jeun', collectionConditionAr: 'صائم', preAnalyticDelay: '1 jour', turnaroundTime: '1 jour' },
-    { code: 'APO_B', category: 'BIOCHEMISTRY', nameFr: 'Apo B', nameAr: 'أبوليبوبروتين B', synonymes: null, sampleTypeFr: 'Sang', sampleTypeAr: 'دم', tubeFr: 'SEC', tubeAr: 'أنبوب جاف', method: 'Spectrophotométrie', collectionConditionFr: 'A jeun', collectionConditionAr: 'صائم', preAnalyticDelay: '1 jour', turnaroundTime: '1 jour' },
-    { code: 'ASAT', category: 'BIOCHEMISTRY', nameFr: 'ASAT', nameAr: 'ASAT', synonymes: 'Transaminases / SGOT', sampleTypeFr: 'Sang', sampleTypeAr: 'دم', tubeFr: 'SEC', tubeAr: 'أنبوب جاف', method: 'Spectrophotométrie', collectionConditionFr: null, collectionConditionAr: null, preAnalyticDelay: '1 jour', turnaroundTime: '1 jour' },
-    { code: 'BETA_HCG_SERIQUE', category: 'HORMONOLOGY', nameFr: 'Béta-HCG sérique', nameAr: 'بيتا HCG في المصل', synonymes: 'BHCG, HCG', sampleTypeFr: 'Sang', sampleTypeAr: 'دم', tubeFr: 'SEC', tubeAr: 'أنبوب جاف', method: 'Chimiluminescence (CMIA)', collectionConditionFr: 'Sans ordonnance 18€', collectionConditionAr: 'من دون وصفة: 18 يورو', preAnalyticDelay: '1 jour', turnaroundTime: '1 jour' },
-    { code: 'BILIRUBINE_CONJUGUEE', category: 'BIOCHEMISTRY', nameFr: 'Bilirubine conjuguée', nameAr: 'البيليروبين المباشر', synonymes: 'Directe', sampleTypeFr: 'Sang', sampleTypeAr: 'دم', tubeFr: 'SEC', tubeAr: 'أنبوب جاف', method: 'Colorimétrie', collectionConditionFr: null, collectionConditionAr: null, preAnalyticDelay: '8 heures', turnaroundTime: '1 jour' },
-    { code: 'BILIRUBINE_TOTALE', category: 'BIOCHEMISTRY', nameFr: 'Bilirubine totale', nameAr: 'البيليروبين الكلي', synonymes: 'Conjuguée + libre', sampleTypeFr: 'Sang', sampleTypeAr: 'دم', tubeFr: 'SEC', tubeAr: 'أنبوب جاف', method: 'Colorimétrie', collectionConditionFr: null, collectionConditionAr: null, preAnalyticDelay: '8 heures', turnaroundTime: '1 jour' },
-    { code: 'CA_125', category: 'TUMOR_MARKERS', nameFr: 'CA 125', nameAr: 'CA 125', synonymes: 'CA125', sampleTypeFr: 'Sang', sampleTypeAr: 'دم', tubeFr: 'SEC', tubeAr: 'أنبوب جاف', method: null, collectionConditionFr: null, collectionConditionAr: null, preAnalyticDelay: '1 jour', turnaroundTime: '2 jours' },
-    { code: 'CA_15_3', category: 'TUMOR_MARKERS', nameFr: 'CA 15.3', nameAr: 'CA 15.3', synonymes: 'CA153', sampleTypeFr: 'Sang', sampleTypeAr: 'دم', tubeFr: 'SEC', tubeAr: 'أنبوب جاف', method: null, collectionConditionFr: null, collectionConditionAr: null, preAnalyticDelay: '1 jour', turnaroundTime: '2 jours' },
-    { code: 'CA_19_9', category: 'TUMOR_MARKERS', nameFr: 'CA 19.9', nameAr: 'CA 19.9', synonymes: 'CA199', sampleTypeFr: 'Sang', sampleTypeAr: 'دم', tubeFr: 'SEC', tubeAr: 'أنبوب جاف', method: null, collectionConditionFr: null, collectionConditionAr: null, preAnalyticDelay: '1 jour', turnaroundTime: '2 jours' },
-    { code: 'CALCITONINE', category: 'HORMONOLOGY', nameFr: 'Calcitonine', nameAr: 'الكالسيتونين', synonymes: null, sampleTypeFr: 'Sang', sampleTypeAr: 'دم', tubeFr: 'SEC', tubeAr: 'أنبوب جاف', method: null, collectionConditionFr: 'A jeun; à congeler dans les 4h', collectionConditionAr: 'صائم؛ يُجمّد خلال 4 ساعات', preAnalyticDelay: '4 heures', turnaroundTime: '3 jours' },
-    { code: 'CALCIUM', category: 'BIOCHEMISTRY', nameFr: 'Calcium', nameAr: 'الكالسيوم', synonymes: 'Calcémie', sampleTypeFr: 'Sang', sampleTypeAr: 'دم', tubeFr: 'SEC', tubeAr: 'أنبوب جاف', method: 'Colorimétrie', collectionConditionFr: null, collectionConditionAr: null, preAnalyticDelay: '1 jour', turnaroundTime: '1 jour' },
-    { code: 'CALCIUM_CORRIGE', category: 'BIOCHEMISTRY', nameFr: 'Calcium corrigé', nameAr: 'الكالسيوم المصحح', synonymes: 'CACOR', sampleTypeFr: 'Sang', sampleTypeAr: 'دم', tubeFr: 'SEC', tubeAr: 'أنبوب جاف', method: 'Colorimétrie', collectionConditionFr: null, collectionConditionAr: null, preAnalyticDelay: '1 jour', turnaroundTime: '1 jour' },
-    { code: 'CALCIURIE', category: 'BIOCHEMISTRY', nameFr: 'Calciurie', nameAr: 'الكالسيوم في البول', synonymes: 'Calcium dans les urines', sampleTypeFr: 'Urine', sampleTypeAr: 'بول', tubeFr: 'Urines échantillon', tubeAr: 'عينة بول', method: 'Colorimétrie', collectionConditionFr: null, collectionConditionAr: null, preAnalyticDelay: '1 jour', turnaroundTime: '1 jour' },
-    { code: 'CALCIURIE_DES_24_HEURES', category: 'BIOCHEMISTRY', nameFr: 'Calciurie des 24 heures', nameAr: 'الكالسيوم في بول 24 ساعة', synonymes: null, sampleTypeFr: 'Urine', sampleTypeAr: 'بول', tubeFr: 'Urines 24h', tubeAr: 'بول 24 ساعة', method: 'Colorimétrie', collectionConditionFr: null, collectionConditionAr: null, preAnalyticDelay: '1 jour', turnaroundTime: '1 jour' },
-    { code: 'CDT', category: 'BIOCHEMISTRY', nameFr: 'CDT', nameAr: 'CDT', synonymes: 'Transferrine carboxy déficiente', sampleTypeFr: 'Sang', sampleTypeAr: 'دم', tubeFr: 'SEC', tubeAr: 'أنبوب جاف', method: 'Électrophorèse capillaire en veine liquide', collectionConditionFr: 'Non remboursé si bilan préfecture 33€', collectionConditionAr: 'غير مُعوَّض إذا كان لفحص المحافظة: 33 يورو', preAnalyticDelay: '1 jour', turnaroundTime: '3 jours' },
-    { code: 'CHLORE', category: 'BIOCHEMISTRY', nameFr: 'Chlore', nameAr: 'الكلوريد', synonymes: 'Cl, iono', sampleTypeFr: 'Sang', sampleTypeAr: 'دم', tubeFr: 'SEC', tubeAr: 'أنبوب جاف', method: 'Potentiométrie indirecte', collectionConditionFr: null, collectionConditionAr: null, preAnalyticDelay: '1 jour', turnaroundTime: '1 jour' },
-    { code: 'CHLORE_URINAIRE', category: 'BIOCHEMISTRY', nameFr: 'Chlore urinaire', nameAr: 'الكلوريد في البول', synonymes: null, sampleTypeFr: 'Urine', sampleTypeAr: 'بول', tubeFr: 'Urines échantillon', tubeAr: 'عينة بول', method: 'Potentiométrie indirecte', collectionConditionFr: null, collectionConditionAr: null, preAnalyticDelay: '1 jour', turnaroundTime: '1 jour' },
-    { code: 'CHLORE_URINAIRE_DES_24_HEURES', category: 'BIOCHEMISTRY', nameFr: 'Chlore urinaire des 24 heures', nameAr: 'الكلوريد في بول 24 ساعة', synonymes: null, sampleTypeFr: 'Urine', sampleTypeAr: 'بول', tubeFr: 'Urines 24h', tubeAr: 'بول 24 ساعة', method: 'Potentiométrie indirecte', collectionConditionFr: null, collectionConditionAr: null, preAnalyticDelay: '1 jour', turnaroundTime: '1 jour' },
-    { code: 'CHOLESTEROL_HDL', category: 'BIOCHEMISTRY', nameFr: 'Cholestérol HDL', nameAr: 'كوليسترول HDL', synonymes: 'HDL, EAL', sampleTypeFr: 'Sang', sampleTypeAr: 'دم', tubeFr: 'SEC', tubeAr: 'أنبوب جاف', method: 'Spectrophotométrie', collectionConditionFr: 'A jeun', collectionConditionAr: 'صائم', preAnalyticDelay: '1 jour', turnaroundTime: '1 jour' },
-    { code: 'CHOLESTEROL_LDL', category: 'BIOCHEMISTRY', nameFr: 'Cholestérol LDL', nameAr: 'كوليسترول LDL', synonymes: 'LDL, EAL', sampleTypeFr: 'Sang', sampleTypeAr: 'دم', tubeFr: 'SEC', tubeAr: 'أنبوب جاف', method: 'Calcul', collectionConditionFr: 'A jeun', collectionConditionAr: 'صائم', preAnalyticDelay: '1 jour', turnaroundTime: '1 jour' },
-    { code: 'CHOLESTEROL_TOTAL', category: 'BIOCHEMISTRY', nameFr: 'Cholestérol total', nameAr: 'الكوليسترول الكلي', synonymes: null, sampleTypeFr: 'Sang', sampleTypeAr: 'دم', tubeFr: 'SEC', tubeAr: 'أنبوب جاف', method: 'Spectrophotométrie', collectionConditionFr: 'A jeun', collectionConditionAr: 'صائم', preAnalyticDelay: '1 jour', turnaroundTime: '1 jour' },
-    { code: 'CLAIRANCE_CALCULEE_SELON_CKD_EPI', category: 'BIOCHEMISTRY', nameFr: 'Clairance calculée selon CKD-EPI', nameAr: 'التصفية المحسوبة حسب CKD-EPI', synonymes: null, sampleTypeFr: 'Sang / Urines', sampleTypeAr: 'دم / بول', tubeFr: 'Urines échantillon + T SEC', tubeAr: 'عينة بول + أنبوب جاف', method: 'Calcul', collectionConditionFr: null, collectionConditionAr: null, preAnalyticDelay: '1 jour', turnaroundTime: '1 jour' },
-    { code: 'CLOZAPINE', category: 'BIOCHEMISTRY', nameFr: 'Clozapine', nameAr: 'كلوزابين', synonymes: 'LEPONEX / NORCLOZAPINE', sampleTypeFr: 'Sang', sampleTypeAr: 'دم', tubeFr: 'SEC SANS GEL', tubeAr: 'أنبوب جاف بدون جل', method: null, collectionConditionFr: 'Prélèvement toujours à la même heure avant une nouvelle prise (fiche médicaments à renseigner)', collectionConditionAr: 'يُسحب دائمًا في نفس الوقت قبل الجرعة التالية (يجب تعبئة استمارة الأدوية)', preAnalyticDelay: '1 jour', turnaroundTime: '7 jours' },
-    { code: 'COEFFICIENT_DE_SATURATION_DE_LA_TRANSFERRINE', category: 'BIOCHEMISTRY', nameFr: 'Coefficient de saturation de la transferrine', nameAr: 'معامل تشبع الترانسفيرين', synonymes: null, sampleTypeFr: 'Sang', sampleTypeAr: 'دم', tubeFr: 'SEC', tubeAr: 'أنبوب جاف', method: 'Calcul', collectionConditionFr: null, collectionConditionAr: null, preAnalyticDelay: '1 jour', turnaroundTime: '1 jour' },
-    { code: 'COMPTE_DADDIS_HLM', category: 'HEMATOLOGY', nameFr: 'Compte d’Addis (HLM)', nameAr: 'عدّ أديس (HLM)', synonymes: 'HLM', sampleTypeFr: 'Urine', sampleTypeAr: 'بول', tubeFr: 'Urines 3h', tubeAr: 'بول 3 ساعات', method: null, collectionConditionFr: 'Voir onglet spécifique', collectionConditionAr: 'انظر القسم المخصص', preAnalyticDelay: '1 jour', turnaroundTime: '1 jour' },
-    { code: 'COPROCULTURE', category: 'MICROBIOLOGY', nameFr: 'Coproculture', nameAr: 'زرع البراز', synonymes: null, sampleTypeFr: 'Selles', sampleTypeAr: 'براز', tubeFr: 'SELLES', tubeAr: 'وعاء براز', method: 'PCR + bactériologie', collectionConditionFr: 'RC +++ voyage à l\'étranger, fièvre, diarrhées, prise récente d\'antibiotiques', collectionConditionAr: 'معلومات سريرية مهمة جدًا: سفر للخارج، حمى، إسهال، تناول حديث لمضادات حيوية', preAnalyticDelay: '24 h TA / <5 jours réfrigéré', turnaroundTime: '2 j' },
-    { code: 'CORTISOL', category: 'HORMONOLOGY', nameFr: 'Cortisol', nameAr: 'كورتيزول', synonymes: null, sampleTypeFr: 'Sang', sampleTypeAr: 'دم', tubeFr: 'SEC', tubeAr: 'أنبوب جاف', method: 'Chimiluminescence', collectionConditionFr: 'A prélever selon prescription', collectionConditionAr: 'يُسحب حسب الوصفة', preAnalyticDelay: '1 jour', turnaroundTime: '1 jour' },
-    { code: 'COTININE', category: 'BIOCHEMISTRY', nameFr: 'Cotinine', nameAr: 'كوتينين', synonymes: null, sampleTypeFr: 'Urine', sampleTypeAr: 'بول', tubeFr: 'Urines échantillon', tubeAr: 'عينة بول', method: 'I', collectionConditionFr: null, collectionConditionAr: null, preAnalyticDelay: '1 jour', turnaroundTime: '2 j' },
-    { code: 'CPK', category: 'BIOCHEMISTRY', nameFr: 'CPK', nameAr: 'CPK', synonymes: null, sampleTypeFr: 'Sang', sampleTypeAr: 'دم', tubeFr: 'SEC', tubeAr: 'أنبوب جاف', method: 'Spectrophotométrie', collectionConditionFr: null, collectionConditionAr: null, preAnalyticDelay: '1 jour', turnaroundTime: '1 jour' },
-    { code: 'CREATININE', category: 'BIOCHEMISTRY', nameFr: 'Créatinine', nameAr: 'كرياتينين', synonymes: null, sampleTypeFr: 'Sang', sampleTypeAr: 'دم', tubeFr: 'SEC', tubeAr: 'أنبوب جاف', method: 'Spectrophotométrie', collectionConditionFr: null, collectionConditionAr: null, preAnalyticDelay: '1 jour', turnaroundTime: '1 jour' },
-    { code: 'CREATININURIE', category: 'BIOCHEMISTRY', nameFr: 'Créatininurie', nameAr: 'الكرياتينين في البول', synonymes: null, sampleTypeFr: 'Urine', sampleTypeAr: 'بول', tubeFr: 'Urines échantillon', tubeAr: 'عينة بول', method: 'Spectrophotométrie', collectionConditionFr: null, collectionConditionAr: null, preAnalyticDelay: '1 jour', turnaroundTime: '1 jour' },
-    { code: 'CREATININURIE_DES_24_HEURES', category: 'BIOCHEMISTRY', nameFr: 'Créatininurie des 24 heures', nameAr: 'الكرياتينين في بول 24 ساعة', synonymes: null, sampleTypeFr: 'Urine', sampleTypeAr: 'بول', tubeFr: 'Urines 24h', tubeAr: 'بول 24 ساعة', method: 'Spectrophotométrie', collectionConditionFr: null, collectionConditionAr: null, preAnalyticDelay: '1 jour', turnaroundTime: '1 jour' },
-    { code: 'CROSS_LAPS', category: 'BIOCHEMISTRY', nameFr: 'CROSS-LAPS', nameAr: 'CROSS-LAPS', synonymes: 'CTX', sampleTypeFr: 'Sang', sampleTypeAr: 'دم', tubeFr: 'EDTA', tubeAr: 'EDTA', method: null, collectionConditionFr: 'A jeun avant 9h si possible', collectionConditionAr: 'صائم قبل الساعة 9 صباحًا إن أمكن', preAnalyticDelay: '8 heures', turnaroundTime: null },
-    { code: 'CRP', category: 'BIOCHEMISTRY', nameFr: 'CRP', nameAr: 'CRP', synonymes: 'Protéine C réactive', sampleTypeFr: 'Sang', sampleTypeAr: 'دم', tubeFr: 'SEC', tubeAr: 'أنبوب جاف', method: 'Immunoturbidimétrie', collectionConditionFr: null, collectionConditionAr: null, preAnalyticDelay: '1 jour', turnaroundTime: '1 jour' },
-    { code: 'CUIVRE', category: 'BIOCHEMISTRY', nameFr: 'Cuivre', nameAr: 'النحاس', synonymes: 'Cu, cupracémie', sampleTypeFr: 'Sang', sampleTypeAr: 'دم', tubeFr: 'SEC SANS GEL', tubeAr: 'أنبوب جاف بدون جل', method: null, collectionConditionFr: 'Tube sec sans gel', collectionConditionAr: 'أنبوب جاف بدون جل', preAnalyticDelay: '4 heures', turnaroundTime: null },
-    { code: 'CYTOLOGIE_URINAIRE', category: 'HEMATOLOGY', nameFr: 'Cytologie urinaire', nameAr: 'الخلويات البولية', synonymes: 'culot urinaire', sampleTypeFr: 'Urine', sampleTypeAr: 'بول', tubeFr: 'Urines échantillon', tubeAr: 'عينة بول', method: 'Cytologie', collectionConditionFr: 'Voir onglet spécifique', collectionConditionAr: 'انظر القسم المخصص', preAnalyticDelay: '1 jour', turnaroundTime: '1 jour' },
-    { code: 'D_DIMERES', category: 'HEMOSTASIS', nameFr: 'D-DIMÈRES', nameAr: 'D-دايمر', synonymes: null, sampleTypeFr: 'Sang', sampleTypeAr: 'دم', tubeFr: 'CITRATE', tubeAr: 'سيترات', method: 'Chronométrie', collectionConditionFr: 'Examen urgent', collectionConditionAr: 'فحص مستعجل', preAnalyticDelay: '8 heures', turnaroundTime: '4 h' },
-    { code: 'DENSITE_URINAIRE', category: 'BIOCHEMISTRY', nameFr: 'Densité urinaire', nameAr: 'الكثافة البولية', synonymes: null, sampleTypeFr: 'Urine', sampleTypeAr: 'بول', tubeFr: 'Urines échantillon', tubeAr: 'عينة بول', method: 'Colorimétrie', collectionConditionFr: null, collectionConditionAr: null, preAnalyticDelay: '2 h AMB / 1 jour (4°C)', turnaroundTime: '1 jour' },
-    { code: 'DEPISTAGE_DE_DROGUES_URINAIRES', category: 'BIOCHEMISTRY', nameFr: 'Dépistage de drogues urinaires', nameAr: 'تحري المخدرات في البول', synonymes: null, sampleTypeFr: 'Urine', sampleTypeAr: 'بول', tubeFr: 'Urines échantillon', tubeAr: 'عينة بول', method: 'Colorimétrie', collectionConditionFr: 'Bilan préfecture déconseillé hors labo et non remboursé', collectionConditionAr: 'فحص المحافظة غير مستحسن خارج المختبر وغير مُعوَّض', preAnalyticDelay: '1 jour', turnaroundTime: '1 jour' },
-    { code: 'DEPISTAGE_URINAIRE_DU_CANNABIS_THC', category: 'BIOCHEMISTRY', nameFr: 'Dépistage urinaire du Cannabis (THC)', nameAr: 'تحري القنب (THC) في البول', synonymes: null, sampleTypeFr: 'Urine', sampleTypeAr: 'بول', tubeFr: 'Urines échantillon', tubeAr: 'عينة بول', method: 'Colorimétrie', collectionConditionFr: 'Bilan préfecture déconseillé hors labo et non remboursé', collectionConditionAr: 'فحص المحافظة غير مستحسن خارج المختبر وغير مُعوَّض', preAnalyticDelay: '1 jour', turnaroundTime: '1 jour' },
-    { code: 'DISPOSITIF_INTRA_VASCULAIRE', category: 'MICROBIOLOGY', nameFr: 'Dispositif intra vasculaire', nameAr: 'جهاز داخل وعائي', synonymes: 'Cathéter, KT', sampleTypeFr: 'Divers', sampleTypeAr: 'متنوع', tubeFr: 'Flacon stérile', tubeAr: 'قارورة معقمة', method: null, collectionConditionFr: null, collectionConditionAr: null, preAnalyticDelay: '<4 h TA / <24 h 2-8°C', turnaroundTime: '5 jours' },
-    { code: 'ECBU_SUR_BORATE', category: 'MICROBIOLOGY', nameFr: 'ECBU sur borate', nameAr: 'فحص بول جرثومي خلوي على بورات', synonymes: 'Examen cytobactériologique des urines', sampleTypeFr: 'Urine', sampleTypeAr: 'بول', tubeFr: 'Urine échantillon (borate)', tubeAr: 'عينة بول (بورات)', method: null, collectionConditionFr: 'Toilette locale; milieu de jet; RC +++', collectionConditionAr: 'تنظيف موضعي؛ عينة من منتصف التبول؛ معلومات سريرية مهمة جدًا', preAnalyticDelay: '<48 h TA', turnaroundTime: '2 jours' },
-    { code: 'ECBU_SANS_BORATE', category: 'MICROBIOLOGY', nameFr: 'ECBU sans borate', nameAr: 'فحص بول جرثومي خلوي بدون بورات', synonymes: 'Examen cytobactériologique des urines', sampleTypeFr: 'Urine', sampleTypeAr: 'بول', tubeFr: 'Urines échantillon', tubeAr: 'عينة بول', method: null, collectionConditionFr: 'Toilette locale; milieu de jet; RC +++', collectionConditionAr: 'تنظيف موضعي؛ عينة من منتصف التبول؛ معلومات سريرية مهمة جدًا', preAnalyticDelay: '<12 h 2-8°C / <2 h TA', turnaroundTime: '2 jours' },
-    { code: 'ELECTROPHORESE_DES_PROTEINES_SERIQUES', category: 'BIOCHEMISTRY', nameFr: 'Électrophorèse des protéines sériques', nameAr: 'الرحلان الكهربائي لبروتينات المصل', synonymes: 'ELPR, EDP, EPR, EPS', sampleTypeFr: 'Sang', sampleTypeAr: 'دم', tubeFr: 'SEC', tubeAr: 'أنبوب جاف', method: 'Électrophorèse capillaire en veine liquide', collectionConditionFr: null, collectionConditionAr: null, preAnalyticDelay: '1 jour', turnaroundTime: '2 jours' },
-    { code: 'ESTRADIOL', category: 'HORMONOLOGY', nameFr: 'Estradiol', nameAr: 'إستراديول', synonymes: 'ostradiol', sampleTypeFr: 'Sang', sampleTypeAr: 'دم', tubeFr: 'SEC', tubeAr: 'أنبوب جاف', method: 'Chimiluminescence', collectionConditionFr: null, collectionConditionAr: null, preAnalyticDelay: '1 jour', turnaroundTime: '1 jour' },
-    { code: 'EXPECTORATION', category: 'MICROBIOLOGY', nameFr: 'Expectoration', nameAr: 'بلغم', synonymes: 'ECBC', sampleTypeFr: 'Crachat', sampleTypeAr: 'قشع', tubeFr: 'Flacon stérile', tubeAr: 'قارورة معقمة', method: null, collectionConditionFr: null, collectionConditionAr: null, preAnalyticDelay: '<4 h TA / <24 h 2-8°C', turnaroundTime: '5 jours' },
-    { code: 'FER_SERIQUE', category: 'BIOCHEMISTRY', nameFr: 'Fer sérique', nameAr: 'حديد المصل', synonymes: null, sampleTypeFr: 'Sang', sampleTypeAr: 'دم', tubeFr: 'SEC', tubeAr: 'أنبوب جاف', method: 'Colorimétrie', collectionConditionFr: null, collectionConditionAr: null, preAnalyticDelay: '1 jour', turnaroundTime: '1 jour' },
-    { code: 'FERRITINE', category: 'BIOCHEMISTRY', nameFr: 'Ferritine', nameAr: 'فيريتين', synonymes: null, sampleTypeFr: 'Sang', sampleTypeAr: 'دم', tubeFr: 'SEC', tubeAr: 'أنبوب جاف', method: 'Chimiluminescence (CMIA)', collectionConditionFr: null, collectionConditionAr: null, preAnalyticDelay: '1 jour', turnaroundTime: '1 jour' },
-    { code: 'FIBRINOGENE', category: 'HEMOSTASIS', nameFr: 'Fibrinogène', nameAr: 'فيبرينوجين', synonymes: null, sampleTypeFr: 'Sang', sampleTypeAr: 'دم', tubeFr: 'CITRATE', tubeAr: 'سيترات', method: 'Chronométrie', collectionConditionFr: null, collectionConditionAr: null, preAnalyticDelay: '1 jour', turnaroundTime: '1 jour' },
-    { code: 'FOLATES_SERIQUES_B9', category: 'BIOCHEMISTRY', nameFr: 'Folates sériques - B9', nameAr: 'فولات المصل - B9', synonymes: 'Vitamine B9', sampleTypeFr: 'Sang', sampleTypeAr: 'دم', tubeFr: 'SEC', tubeAr: 'أنبوب جاف', method: 'Chimiluminescence (CMIA)', collectionConditionFr: 'Éviter l\'hémolyse, à l\'abri de la lumière', collectionConditionAr: 'تجنب الانحلال الدموي ويُحفظ بعيدًا عن الضوء', preAnalyticDelay: '1 jour', turnaroundTime: '1 jour' },
-    { code: 'FORMULE_SANGUINE', category: 'HEMATOLOGY', nameFr: 'Formule sanguine', nameAr: 'الصيغة الدموية', synonymes: 'NFS', sampleTypeFr: 'Sang', sampleTypeAr: 'دم', tubeFr: 'EDTA', tubeAr: 'EDTA', method: 'Cytométrie de flux - Impédance', collectionConditionFr: null, collectionConditionAr: null, preAnalyticDelay: '8 heures', turnaroundTime: '1 jour' },
-    { code: 'FSH', category: 'HORMONOLOGY', nameFr: 'FSH', nameAr: 'FSH', synonymes: null, sampleTypeFr: 'Sang', sampleTypeAr: 'دم', tubeFr: 'SEC', tubeAr: 'أنبوب جاف', method: 'Chimiluminescence (CMIA)', collectionConditionFr: null, collectionConditionAr: null, preAnalyticDelay: '1 jour', turnaroundTime: '1 jour' },
-    { code: 'GAMMA_G_T', category: 'BIOCHEMISTRY', nameFr: 'Gamma G.T.', nameAr: 'جاما GT', synonymes: 'GGT', sampleTypeFr: 'Sang', sampleTypeAr: 'دم', tubeFr: 'SEC', tubeAr: 'أنبوب جاف', method: 'Spectrophotométrie', collectionConditionFr: 'Déconseillé hors labo si commission permis de conduire (identité)', collectionConditionAr: 'غير مستحسن خارج المختبر إذا كان لفحص رخصة القيادة (الهوية)', preAnalyticDelay: '1 jour', turnaroundTime: '1 jour' },
-    { code: 'GLYCEMIE_SERIQUE_A_JEUN', category: 'BIOCHEMISTRY', nameFr: 'Glycémie sérique à jeun', nameAr: 'سكر الدم صائمًا', synonymes: 'GAJ', sampleTypeFr: 'Sang', sampleTypeAr: 'دم', tubeFr: 'FLUORÉ', tubeAr: 'أنبوب فلورايد', method: 'Spectrophotométrie', collectionConditionFr: 'A jeun', collectionConditionAr: 'صائم', preAnalyticDelay: '1 jour', turnaroundTime: '1 jour' },
-    { code: 'GLYCOSURIE', category: 'BIOCHEMISTRY', nameFr: 'Glycosurie', nameAr: 'سكر البول', synonymes: 'Sucre', sampleTypeFr: 'Urine', sampleTypeAr: 'بول', tubeFr: 'Urines échantillon', tubeAr: 'عينة بول', method: 'Spectrophotométrie', collectionConditionFr: '1re urine du matin; à jeun', collectionConditionAr: 'أول بول صباحي؛ صائم', preAnalyticDelay: '2 heures', turnaroundTime: '1 jour' },
-    { code: 'GROUPE_SANGUIN', category: 'HEMATOLOGY', nameFr: 'Groupe sanguin', nameAr: 'فصيلة الدم', synonymes: 'GS', sampleTypeFr: 'Sang', sampleTypeAr: 'دم', tubeFr: 'EDTA', tubeAr: 'EDTA', method: 'Méthode immunologique d\'hémagglutination', collectionConditionFr: 'Nom de naissance impératif; 2 déterminations = 2 gestes', collectionConditionAr: 'اسم الولادة إلزامي؛ تحديدان = سحبان منفصلان', preAnalyticDelay: '1 jour', turnaroundTime: '1 jour' },
-    { code: 'HAPTOGLOBINE', category: 'BIOCHEMISTRY', nameFr: 'Haptoglobine', nameAr: 'هابتوغلوبين', synonymes: null, sampleTypeFr: 'Sang', sampleTypeAr: 'دم', tubeFr: 'SEC', tubeAr: 'أنبوب جاف', method: 'Immunoturbidimétrie', collectionConditionFr: null, collectionConditionAr: null, preAnalyticDelay: '1 jour', turnaroundTime: '1 jour' },
-    { code: 'HEMOCULTURE', category: 'MICROBIOLOGY', nameFr: 'Hémoculture', nameAr: 'زرع الدم', synonymes: 'Hemoc', sampleTypeFr: 'Sang', sampleTypeAr: 'دم', tubeFr: '2 flacons', tubeAr: 'قارورتان', method: null, collectionConditionFr: 'RC++; protocole spécifique; dès que possible; <12 h TA', collectionConditionAr: 'معلومات سريرية مهمة؛ بروتوكول خاص؛ بأسرع ما يمكن؛ أقل من 12 ساعة بحرارة الغرفة', preAnalyticDelay: 'Dès que possible / <12 h TA', turnaroundTime: null },
-    { code: 'HEMOGLOBINE_GLYQUEE', category: 'BIOCHEMISTRY', nameFr: 'Hémoglobine glyquée', nameAr: 'الهيموغلوبين السكري', synonymes: 'A1c, Hba1c', sampleTypeFr: 'Sang', sampleTypeAr: 'دم', tubeFr: 'EDTA', tubeAr: 'EDTA', method: 'Spectrophotométrie', collectionConditionFr: null, collectionConditionAr: null, preAnalyticDelay: '1 jour', turnaroundTime: '1 jour' },
-    { code: 'HEPATITE_A_IGG', category: 'SEROLOGY', nameFr: 'Hépatite A - IgG', nameAr: 'التهاب الكبد A - IgG', synonymes: 'VHA', sampleTypeFr: 'Sang', sampleTypeAr: 'دم', tubeFr: 'SEC', tubeAr: 'أنبوب جاف', method: 'Chimiluminescence (CMIA)', collectionConditionFr: null, collectionConditionAr: null, preAnalyticDelay: '1 jour', turnaroundTime: '3 jours' },
-    { code: 'HEPATITE_A_IGM', category: 'SEROLOGY', nameFr: 'Hépatite A - IgM', nameAr: 'التهاب الكبد A - IgM', synonymes: 'VHA', sampleTypeFr: 'Sang', sampleTypeAr: 'دم', tubeFr: 'SEC', tubeAr: 'أنبوب جاف', method: 'Chimiluminescence (CMIA)', collectionConditionFr: null, collectionConditionAr: null, preAnalyticDelay: '1 jour', turnaroundTime: '3 jours' },
-    { code: 'HEPATITE_B_ANTICORPS_ANTI_HBC', category: 'SEROLOGY', nameFr: 'Hépatite B - anticorps anti-HBc', nameAr: 'التهاب الكبد B - أضداد Anti-HBc', synonymes: 'Hépatite B, IST', sampleTypeFr: 'Sang', sampleTypeAr: 'دم', tubeFr: 'SEC', tubeAr: 'أنبوب جاف', method: 'Chimiluminescence (CMIA)', collectionConditionFr: 'Dépistage IST sans avance de frais au labo si moins de 26 ans', collectionConditionAr: 'تحري الأمراض المنقولة جنسيًا بدون دفع مسبق بالمختبر إذا كان العمر أقل من 26 سنة', preAnalyticDelay: '1 jour', turnaroundTime: '1 jour' },
-    { code: 'HEPATITE_B_ANTICORPS_ANTI_HBS', category: 'SEROLOGY', nameFr: 'Hépatite B - anticorps anti-HBs', nameAr: 'التهاب الكبد B - أضداد Anti-HBs', synonymes: 'Hépatite B, IST', sampleTypeFr: 'Sang', sampleTypeAr: 'دم', tubeFr: 'SEC', tubeAr: 'أنبوب جاف', method: 'Chimiluminescence (CMIA)', collectionConditionFr: 'Dépistage IST sans avance de frais au labo si moins de 26 ans', collectionConditionAr: 'تحري الأمراض المنقولة جنسيًا بدون دفع مسبق بالمختبر إذا كان العمر أقل من 26 سنة', preAnalyticDelay: '1 jour', turnaroundTime: '1 jour' },
-    { code: 'HEPATITE_B_ANTIGENE_HBS', category: 'SEROLOGY', nameFr: 'Hépatite B - antigène HBs', nameAr: 'التهاب الكبد B - المستضد HBs', synonymes: 'Hépatite B, IST', sampleTypeFr: 'Sang', sampleTypeAr: 'دم', tubeFr: 'SEC', tubeAr: 'أنبوب جاف', method: 'Chimiluminescence (CMIA)', collectionConditionFr: 'Dépistage IST sans avance de frais au labo si moins de 26 ans', collectionConditionAr: 'تحري الأمراض المنقولة جنسيًا بدون دفع مسبق بالمختبر إذا كان العمر أقل من 26 سنة', preAnalyticDelay: '1 jour', turnaroundTime: '1 jour' },
-    { code: 'HEPATITE_C_DEPISTAGE', category: 'SEROLOGY', nameFr: 'Hépatite C - dépistage', nameAr: 'التهاب الكبد C - تحري', synonymes: 'VHC', sampleTypeFr: 'Sang', sampleTypeAr: 'دم', tubeFr: 'SEC', tubeAr: 'أنبوب جاف', method: 'Chimiluminescence (CMIA)', collectionConditionFr: null, collectionConditionAr: null, preAnalyticDelay: '1 jour', turnaroundTime: '1 jour' },
-    { code: 'HIV', category: 'SEROLOGY', nameFr: 'HIV', nameAr: 'فيروس HIV', synonymes: 'VIH', sampleTypeFr: 'Sang', sampleTypeAr: 'دم', tubeFr: 'SEC', tubeAr: 'أنبوب جاف', method: 'Chimiluminescence (CMIA)', collectionConditionFr: null, collectionConditionAr: null, preAnalyticDelay: '1 jour', turnaroundTime: '1 jour' },
-    { code: 'HLA_B27', category: 'IMMUNOLOGY', nameFr: 'HLA B27', nameAr: 'HLA B27', synonymes: 'TYPAGE HLA B27 ANTIGENE HLAB27', sampleTypeFr: 'Sang', sampleTypeAr: 'دم', tubeFr: 'EDTA', tubeAr: 'EDTA', method: null, collectionConditionFr: 'Attestation consentement obligatoire (du lundi au jeudi matin)', collectionConditionAr: 'إثبات موافقة إلزامي (من الاثنين إلى صباح الخميس)', preAnalyticDelay: '1 jour', turnaroundTime: '4 jours' },
-    { code: 'HPV_PAPILLOMAVIRUS_HUMAIN_DETECTION_QUALITATIVE', category: 'MICROBIOLOGY', nameFr: 'HPV Papillomavirus humain - détection qualitative', nameAr: 'فيروس الورم الحليمي البشري - كشف نوعي', synonymes: 'HPV, IST', sampleTypeFr: 'Muqueuse', sampleTypeAr: 'مخاطية', tubeFr: 'Écouvillon avec milieu de transport', tubeAr: 'مسحة مع وسط نقل', method: 'PCR', collectionConditionFr: null, collectionConditionAr: null, preAnalyticDelay: '<6 semaines', turnaroundTime: '2 jours' },
-    { code: 'HYPERGLYCEMIE_PROVOQUEE_PAR_VOIE_ORALE_HGPO', category: 'BIOCHEMISTRY', nameFr: 'Hyperglycémie provoquée par voie orale - HGPO', nameAr: 'اختبار تحمل الغلوكوز الفموي - HGPO', synonymes: 'HGPO', sampleTypeFr: 'Sang', sampleTypeAr: 'دم', tubeFr: 'FLUORÉ', tubeAr: 'أنبوب فلورايد', method: 'Spectrophotométrie', collectionConditionFr: 'Protocole hyperglycémie: grossesse (3 prélèvements T0, 1h, 2h); hors grossesse (2 prélèvements T0, 2h)', collectionConditionAr: 'بروتوكول فرط سكر الدم: في الحمل 3 سحبات (T0 و1س و2س)، وخارج الحمل سحبتان (T0 و2س)', preAnalyticDelay: '1 jour', turnaroundTime: '1 jour' },
-    { code: 'IMMUNOFIXATION', category: 'IMMUNOLOGY', nameFr: 'Immunofixation', nameAr: 'التثبيت المناعي', synonymes: null, sampleTypeFr: 'Sang', sampleTypeAr: 'دم', tubeFr: 'SEC', tubeAr: 'أنبوب جاف', method: 'Électrophorèse capillaire en veine liquide', collectionConditionFr: null, collectionConditionAr: null, preAnalyticDelay: '1 jour', turnaroundTime: '2 jours' },
-    { code: 'IMMUNOGLOBULINES_A', category: 'IMMUNOLOGY', nameFr: 'Immunoglobulines A', nameAr: 'الغلوبولينات المناعية A', synonymes: 'IGA', sampleTypeFr: 'Sang', sampleTypeAr: 'دم', tubeFr: 'SEC', tubeAr: 'أنبوب جاف', method: 'Immunoturbidimétrie', collectionConditionFr: null, collectionConditionAr: null, preAnalyticDelay: '1 jour', turnaroundTime: '1 j' },
-    { code: 'IMMUNOGLOBULINES_E', category: 'ALLERGOLOGY', nameFr: 'Immunoglobulines E', nameAr: 'الغلوبولينات المناعية E', synonymes: 'IGE', sampleTypeFr: 'Sang', sampleTypeAr: 'دم', tubeFr: 'SEC', tubeAr: 'أنبوب جاف', method: 'Immunoturbidimétrie', collectionConditionFr: null, collectionConditionAr: null, preAnalyticDelay: '1 jour', turnaroundTime: '3 jours' },
-    { code: 'IMMUNOGLOBULINES_G', category: 'IMMUNOLOGY', nameFr: 'Immunoglobulines G', nameAr: 'الغلوبولينات المناعية G', synonymes: 'IGG', sampleTypeFr: 'Sang', sampleTypeAr: 'دم', tubeFr: 'SEC', tubeAr: 'أنبوب جاف', method: 'Immunoturbidimétrie', collectionConditionFr: null, collectionConditionAr: null, preAnalyticDelay: '1 jour', turnaroundTime: '1 j' },
-    { code: 'IMMUNOGLOBULINES_M', category: 'IMMUNOLOGY', nameFr: 'Immunoglobulines M', nameAr: 'الغلوبولينات المناعية M', synonymes: 'IGM', sampleTypeFr: 'Sang', sampleTypeAr: 'دم', tubeFr: 'SEC', tubeAr: 'أنبوب جاف', method: 'Immunoturbidimétrie', collectionConditionFr: null, collectionConditionAr: null, preAnalyticDelay: '1 jour', turnaroundTime: '1 j' },
-    { code: 'IMMUNOPHENOTYPAGE_CD19_CD20', category: 'IMMUNOLOGY', nameFr: 'Immunophénotypage CD19 CD20', nameAr: 'التنميط المناعي CD19 CD20', synonymes: 'CD19CD20', sampleTypeFr: 'Sang', sampleTypeAr: 'دم', tubeFr: 'EDTA', tubeAr: 'EDTA', method: null, collectionConditionFr: 'Du lundi au vendredi matin', collectionConditionAr: 'من الاثنين إلى صباح الجمعة', preAnalyticDelay: '1 jour', turnaroundTime: '2 jours' },
-    { code: 'IMMUNOPHENOTYPAGE_CD3_CD4', category: 'IMMUNOLOGY', nameFr: 'Immunophénotypage CD3 CD4', nameAr: 'التنميط المناعي CD3 CD4', synonymes: 'CD4CD8', sampleTypeFr: 'Sang', sampleTypeAr: 'دم', tubeFr: 'EDTA', tubeAr: 'EDTA', method: null, collectionConditionFr: 'Du lundi au vendredi matin', collectionConditionAr: 'من الاثنين إلى صباح الجمعة', preAnalyticDelay: '1 jour', turnaroundTime: '2 jours' },
-    { code: 'IMMUNOPHENOTYPAGE_LYMPHOCYTAIRE', category: 'IMMUNOLOGY', nameFr: 'Immunophénotypage lymphocytaire', nameAr: 'التنميط المناعي اللمفاوي', synonymes: 'IPHEN', sampleTypeFr: 'Sang', sampleTypeAr: 'دم', tubeFr: 'EDTA', tubeAr: 'EDTA', method: null, collectionConditionFr: 'Du lundi au vendredi matin', collectionConditionAr: 'من الاثنين إلى صباح الجمعة', preAnalyticDelay: '1 jour', turnaroundTime: '2 jours' },
-    { code: 'IST_CHLAM_GONO_M_GENITALIUM_DANS_LES_URINES', category: 'MICROBIOLOGY', nameFr: 'IST : Chlam./Gono./M.génitalium dans les urines', nameAr: 'الأمراض المنقولة جنسيًا: كلاميديا/غونو/ميكوبلازما تناسلية في البول', synonymes: 'IST', sampleTypeFr: 'Urines', sampleTypeAr: 'بول', tubeFr: 'URINESECH', tubeAr: 'عينة بول جافة', method: 'PCR', collectionConditionFr: 'Dépistage IST sans avance de frais au labo si moins de 26 ans', collectionConditionAr: 'تحري الأمراض المنقولة جنسيًا بدون دفع مسبق بالمختبر إذا كان العمر أقل من 26 سنة', preAnalyticDelay: '<7 jours 2-8°C', turnaroundTime: '2 jours' },
-    { code: 'IST_CHLAM_GONO_M_GENITALIUM_PV_PRELEVEMENT_URETRAL', category: 'MICROBIOLOGY', nameFr: 'IST : Chlam./Gono./M.génitalium (PV, prélèvement urétral...)', nameAr: 'الأمراض المنقولة جنسيًا: كلاميديا/غونو/ميكوبلازما تناسلية (مسحة مهبلية أو إحليلية...)', synonymes: 'IST', sampleTypeFr: 'PV / PU', sampleTypeAr: 'مهبلي / إحليلي', tubeFr: 'Écouvillon avec milieu de transport', tubeAr: 'مسحة مع وسط نقل', method: 'PCR', collectionConditionFr: 'Dépistage IST sans avance de frais au labo si moins de 26 ans', collectionConditionAr: 'تحري الأمراض المنقولة جنسيًا بدون دفع مسبق بالمختبر إذا كان العمر أقل من 26 سنة', preAnalyticDelay: '<7 jours 2-8°C', turnaroundTime: '2 jours' },
-    { code: 'LDH', category: 'BIOCHEMISTRY', nameFr: 'LDH', nameAr: 'LDH', synonymes: null, sampleTypeFr: 'Sang', sampleTypeAr: 'دم', tubeFr: 'SEC', tubeAr: 'أنبوب جاف', method: 'Spectrophotométrie', collectionConditionFr: null, collectionConditionAr: null, preAnalyticDelay: '2 heures', turnaroundTime: '1 jour' },
-    { code: 'LH', category: 'HORMONOLOGY', nameFr: 'LH', nameAr: 'LH', synonymes: null, sampleTypeFr: 'Sang', sampleTypeAr: 'دم', tubeFr: 'SEC', tubeAr: 'أنبوب جاف', method: 'Chimiluminescence (CMIA)', collectionConditionFr: null, collectionConditionAr: null, preAnalyticDelay: '1 jour', turnaroundTime: '1 jour' },
-    { code: 'LIPASE', category: 'BIOCHEMISTRY', nameFr: 'Lipase', nameAr: 'ليباز', synonymes: null, sampleTypeFr: 'Sang', sampleTypeAr: 'دم', tubeFr: 'SEC', tubeAr: 'أنبوب جاف', method: 'Colorimétrie', collectionConditionFr: null, collectionConditionAr: null, preAnalyticDelay: '1 jour', turnaroundTime: '1 jour' },
-    { code: 'LIQUIDE_DE_PONCTION', category: 'BIOCHEMISTRY', nameFr: 'Liquide de ponction', nameAr: 'سائل بزل', synonymes: 'liquide articulaire, ascite, pleural', sampleTypeFr: 'Liquide de ponction', sampleTypeAr: 'سائل بزل', tubeFr: 'Flacon stérile + 1 EDTA', tubeAr: 'قارورة معقمة + EDTA', method: null, collectionConditionFr: 'Prélever 1 tube EDTA ou héparine en complément', collectionConditionAr: 'يؤخذ أنبوب EDTA أو هيبارين إضافي', preAnalyticDelay: 'Dès que possible / <24h TA ou réfrigéré', turnaroundTime: '5 jours' },
-    { code: 'LITHIUM', category: 'BIOCHEMISTRY', nameFr: 'Lithium', nameAr: 'ليثيوم', synonymes: 'Théralité', sampleTypeFr: 'Sang', sampleTypeAr: 'دم', tubeFr: 'SEC', tubeAr: 'أنبوب جاف', method: null, collectionConditionFr: 'Le matin 12h après la prise et avant toute nouvelle prise (fiche médicaments à renseigner)', collectionConditionAr: 'صباحًا بعد 12 ساعة من الجرعة وقبل أي جرعة جديدة (يجب تعبئة استمارة الأدوية)', preAnalyticDelay: '1 jour', turnaroundTime: '2 jours' },
-    { code: 'LITHIUM_ERYTHROCYTAIRE', category: 'BIOCHEMISTRY', nameFr: 'Lithium érythrocytaire', nameAr: 'ليثيوم داخل الكريات الحمراء', synonymes: null, sampleTypeFr: 'Sang', sampleTypeAr: 'دم', tubeFr: 'EDTA', tubeAr: 'EDTA', method: null, collectionConditionFr: 'Le matin 12h après la prise et avant toute nouvelle prise (fiche médicaments à renseigner)', collectionConditionAr: 'صباحًا بعد 12 ساعة من الجرعة وقبل أي جرعة جديدة (يجب تعبئة استمارة الأدوية)', preAnalyticDelay: '1 jour', turnaroundTime: '4 jours' },
-    { code: 'MAGNESIUM', category: 'BIOCHEMISTRY', nameFr: 'Magnésium', nameAr: 'مغنيسيوم', synonymes: 'Mg', sampleTypeFr: 'Sang', sampleTypeAr: 'دم', tubeFr: 'SEC', tubeAr: 'أنبوب جاف', method: 'Spectrophotométrie', collectionConditionFr: null, collectionConditionAr: null, preAnalyticDelay: '1 jour', turnaroundTime: '1 jour' },
-    { code: 'MAGNESIUM_URINAIRE', category: 'BIOCHEMISTRY', nameFr: 'Magnésium urinaire', nameAr: 'المغنيسيوم في البول', synonymes: null, sampleTypeFr: 'Urine', sampleTypeAr: 'بول', tubeFr: 'Urines échantillon', tubeAr: 'عينة بول', method: 'Spectrophotométrie', collectionConditionFr: null, collectionConditionAr: null, preAnalyticDelay: '1 jour', turnaroundTime: '1 jour' },
-    { code: 'MAGNESIUM_URINAIRE_DES_24H', category: 'BIOCHEMISTRY', nameFr: 'Magnésium urinaire des 24h', nameAr: 'المغنيسيوم في بول 24 ساعة', synonymes: null, sampleTypeFr: 'Urine', sampleTypeAr: 'بول', tubeFr: 'Urines 24h', tubeAr: 'بول 24 ساعة', method: 'Spectrophotométrie', collectionConditionFr: null, collectionConditionAr: null, preAnalyticDelay: '1 jour', turnaroundTime: '1 jour' },
-    { code: 'MICROALBUMINURIE', category: 'BIOCHEMISTRY', nameFr: 'Microalbuminurie', nameAr: 'الميكروألبومين في البول', synonymes: null, sampleTypeFr: 'Urine', sampleTypeAr: 'بول', tubeFr: 'Urines échantillon', tubeAr: 'عينة بول', method: 'Immunoturbidimétrie', collectionConditionFr: null, collectionConditionAr: null, preAnalyticDelay: '1 jour', turnaroundTime: '1 jour' },
-    { code: 'MICROALBUMINURIE_24H', category: 'BIOCHEMISTRY', nameFr: 'Microalbuminurie (24h)', nameAr: 'الميكروألبومين في بول 24 ساعة', synonymes: null, sampleTypeFr: 'Urine', sampleTypeAr: 'بول', tubeFr: 'Urines 24h', tubeAr: 'بول 24 ساعة', method: 'Immunoturbidimétrie', collectionConditionFr: null, collectionConditionAr: null, preAnalyticDelay: '1 jour', turnaroundTime: '1 jour' },
-    { code: 'NITRITES_URINAIRES', category: 'BIOCHEMISTRY', nameFr: 'Nitrites urinaires', nameAr: 'نتريت البول', synonymes: null, sampleTypeFr: 'Urine', sampleTypeAr: 'بول', tubeFr: 'Urines échantillon', tubeAr: 'عينة بول', method: 'Colorimétrie', collectionConditionFr: null, collectionConditionAr: null, preAnalyticDelay: '2 h AMB / 1 jour (4°C)', turnaroundTime: '1 jour' },
-    { code: 'NT_PROBNP', category: 'BIOCHEMISTRY', nameFr: 'NT-proBNP', nameAr: 'NT-proBNP', synonymes: null, sampleTypeFr: 'Sang', sampleTypeAr: 'دم', tubeFr: 'SEC', tubeAr: 'أنبوب جاف', method: 'Chimiluminescence (CMIA)', collectionConditionFr: null, collectionConditionAr: null, preAnalyticDelay: '1 jour', turnaroundTime: '1 jour' },
-    { code: 'NUMERATION_SANGUINE', category: 'HEMATOLOGY', nameFr: 'Numération sanguine', nameAr: 'تعداد دم', synonymes: 'NFS', sampleTypeFr: 'Sang', sampleTypeAr: 'دم', tubeFr: 'EDTA', tubeAr: 'EDTA', method: 'Cytométrie de flux - Impédance', collectionConditionFr: null, collectionConditionAr: null, preAnalyticDelay: '8 heures', turnaroundTime: '1 jour' },
-    { code: 'IMMUNOGLOBULINES_E_IGE_TOTALES', category: 'ALLERGOLOGY', nameFr: 'Immunoglobulines E - IGE totales', nameAr: 'الغلوبولينات المناعية E الكلية', synonymes: 'IGE', sampleTypeFr: 'Sang', sampleTypeAr: 'دم', tubeFr: 'SEC', tubeAr: 'أنبوب جاف', method: 'Immunoturbidimétrie', collectionConditionFr: null, collectionConditionAr: null, preAnalyticDelay: '1 jour', turnaroundTime: '3 jours' },
-    { code: 'PALUDISME', category: 'MICROBIOLOGY', nameFr: 'Paludisme', nameAr: 'الملاريا', synonymes: null, sampleTypeFr: 'Sang', sampleTypeAr: 'دم', tubeFr: 'EDTA', tubeAr: 'EDTA', method: 'Méthode manuelle qualitative et quantitative par examen microscopique de frottis colorés au MGG', collectionConditionFr: 'Prélèvement urgent – renseignements cliniques +++', collectionConditionAr: 'سحب مستعجل – معلومات سريرية مهمة جدًا', preAnalyticDelay: '1 jour', turnaroundTime: '4 h' },
-    { code: 'PARASITOLOGIE_DES_SELLES', category: 'MICROBIOLOGY', nameFr: 'Parasitologie des selles', nameAr: 'طفيليات البراز', synonymes: 'PARA', sampleTypeFr: 'Selles', sampleTypeAr: 'براز', tubeFr: 'SELLES', tubeAr: 'وعاء براز', method: null, collectionConditionFr: 'Renseignements cliniques +++', collectionConditionAr: 'معلومات سريرية مهمة جدًا', preAnalyticDelay: '<24 h à 2-8°C / <12 h TA / (<4 h TA si recherche formes végétatives)', turnaroundTime: '3 jours' },
-    { code: 'PARATHORMONE', category: 'HORMONOLOGY', nameFr: 'Parathormone', nameAr: 'هرمون جار الدرق', synonymes: 'PTH', sampleTypeFr: 'Sang', sampleTypeAr: 'دم', tubeFr: 'SEC', tubeAr: 'أنبوب جاف', method: 'Chimiluminescence', collectionConditionFr: null, collectionConditionAr: null, preAnalyticDelay: '6 heures', turnaroundTime: '1 jour' },
-    { code: 'PH_URINAIRE', category: 'BIOCHEMISTRY', nameFr: 'pH urinaire', nameAr: 'درجة حموضة البول', synonymes: null, sampleTypeFr: 'Urine', sampleTypeAr: 'بول', tubeFr: 'Urines échantillon', tubeAr: 'عينة بول', method: 'Colorimétrie', collectionConditionFr: null, collectionConditionAr: null, preAnalyticDelay: '2 h AMB / 1 jour (4°C)', turnaroundTime: '1 jour' },
-    { code: 'PHOSPHATASE_ALCALINE', category: 'BIOCHEMISTRY', nameFr: 'Phosphatase alcaline', nameAr: 'الفوسفاتاز القلوية', synonymes: 'PAL', sampleTypeFr: 'Sang', sampleTypeAr: 'دم', tubeFr: 'SEC', tubeAr: 'أنبوب جاف', method: 'Colorimétrie', collectionConditionFr: null, collectionConditionAr: null, preAnalyticDelay: '1 jour', turnaroundTime: '1 jour' },
-    { code: 'PHOSPHATE_URINAIRE', category: 'BIOCHEMISTRY', nameFr: 'Phosphate urinaire', nameAr: 'الفوسفات في البول', synonymes: null, sampleTypeFr: 'Urine', sampleTypeAr: 'بول', tubeFr: 'Urines échantillon', tubeAr: 'عينة بول', method: 'Spectrophotométrie', collectionConditionFr: null, collectionConditionAr: null, preAnalyticDelay: '1 jour', turnaroundTime: '1 jour' },
-    { code: 'PHOSPHATE_URINAIRE_24H', category: 'BIOCHEMISTRY', nameFr: 'Phosphate urinaire 24h', nameAr: 'الفوسفات في بول 24 ساعة', synonymes: null, sampleTypeFr: 'Urine', sampleTypeAr: 'بول', tubeFr: 'Urines 24h', tubeAr: 'بول 24 ساعة', method: 'Spectrophotométrie', collectionConditionFr: null, collectionConditionAr: null, preAnalyticDelay: '1 jour', turnaroundTime: '1 jour' },
-    { code: 'PHOSPHOREMIE', category: 'BIOCHEMISTRY', nameFr: 'Phosphorémie', nameAr: 'فوسفور الدم', synonymes: 'P', sampleTypeFr: 'Sang', sampleTypeAr: 'دم', tubeFr: 'SEC', tubeAr: 'أنبوب جاف', method: 'Spectrophotométrie', collectionConditionFr: null, collectionConditionAr: null, preAnalyticDelay: '4 heures', turnaroundTime: '1 jour' },
-    { code: 'PLAQUETTES', category: 'HEMATOLOGY', nameFr: 'Plaquettes', nameAr: 'الصفائح الدموية', synonymes: null, sampleTypeFr: 'Sang', sampleTypeAr: 'دم', tubeFr: 'EDTA', tubeAr: 'EDTA', method: 'Impédance', collectionConditionFr: null, collectionConditionAr: null, preAnalyticDelay: '1 jour', turnaroundTime: '1 jour' },
-    { code: 'PLAQUETTES_AGREGATS_CITRATE', category: 'HEMOSTASIS', nameFr: 'Plaquettes - agrégats (citrate)', nameAr: 'الصفائح - تكتلات (سيترات)', synonymes: null, sampleTypeFr: 'Sang', sampleTypeAr: 'دم', tubeFr: 'CITRATE', tubeAr: 'سيترات', method: 'Impédance', collectionConditionFr: 'À réaliser au laboratoire', collectionConditionAr: 'يُجرى في المختبر', preAnalyticDelay: '2 heures', turnaroundTime: '1 jour' },
-    { code: 'PLAQUETTES_AGREGATS_S_MONOVETTE', category: 'HEMOSTASIS', nameFr: 'Plaquettes - agrégats (S-MONOVETTE)', nameAr: 'الصفائح - تكتلات (S-MONOVETTE)', synonymes: null, sampleTypeFr: 'Sang', sampleTypeAr: 'دم', tubeFr: 'S-MONOVETTE', tubeAr: 'S-MONOVETTE', method: 'Impédance - Automate SYSMEX XN', collectionConditionFr: 'Si contrôle demandé : EDTA + Monov', collectionConditionAr: 'عند طلب إعادة التحقق: EDTA + Monov', preAnalyticDelay: '8 heures', turnaroundTime: '1 jour' },
-    { code: 'POTASSIUM', category: 'BIOCHEMISTRY', nameFr: 'Potassium', nameAr: 'بوتاسيوم', synonymes: 'K, iono', sampleTypeFr: 'Sang', sampleTypeAr: 'دم', tubeFr: 'SEC', tubeAr: 'أنبوب جاف', method: 'Potentiométrie indirecte', collectionConditionFr: null, collectionConditionAr: null, preAnalyticDelay: '6 heures', turnaroundTime: '1 jour' },
-    { code: 'POTASSIUM_URINAIRE', category: 'BIOCHEMISTRY', nameFr: 'Potassium urinaire', nameAr: 'البوتاسيوم في البول', synonymes: null, sampleTypeFr: 'Urine', sampleTypeAr: 'بول', tubeFr: 'Urines échantillon', tubeAr: 'عينة بول', method: 'Potentiométrie indirecte', collectionConditionFr: null, collectionConditionAr: null, preAnalyticDelay: '1 jour', turnaroundTime: '1 jour' },
-    { code: 'POTASSIUM_URINAIRE_DES_24_HEURES', category: 'BIOCHEMISTRY', nameFr: 'Potassium urinaire des 24 heures', nameAr: 'البوتاسيوم في بول 24 ساعة', synonymes: null, sampleTypeFr: 'Urine', sampleTypeAr: 'بول', tubeFr: 'Urines 24h', tubeAr: 'بول 24 ساعة', method: 'Potentiométrie indirecte', collectionConditionFr: null, collectionConditionAr: null, preAnalyticDelay: '1 jour', turnaroundTime: '1 jour' },
-    { code: 'PREALBUMINE', category: 'BIOCHEMISTRY', nameFr: 'Préalbumine', nameAr: 'بري ألبومين', synonymes: null, sampleTypeFr: 'Sang', sampleTypeAr: 'دم', tubeFr: 'SEC', tubeAr: 'أنبوب جاف', method: 'Immunoturbidimétrie', collectionConditionFr: null, collectionConditionAr: null, preAnalyticDelay: '1 jour', turnaroundTime: '1 jour' },
-    { code: 'PRELEVEMENTS_MYCOLOGIQUES_DERMATOPHYTES_LEVURES', category: 'MICROBIOLOGY', nameFr: 'Prélèvements mycologiques (dermatophytes, levures)', nameAr: 'عينات فطرية (فطور جلدية وخمائر)', synonymes: 'Myco / squames / cheveux / ongles', sampleTypeFr: null, sampleTypeAr: null, tubeFr: 'Flacon stérile', tubeAr: 'قارورة معقمة', method: null, collectionConditionFr: 'Arrêt crème 15 jours; vernis/solution filmogène 3 mois; antifongique oral 3 mois (sauf urgence ou contexte particulier)', collectionConditionAr: 'إيقاف الكريم 15 يومًا؛ الورنيش/المحلول الغشائي 3 أشهر؛ مضاد الفطريات الفموي 3 أشهر (إلا في الطوارئ أو ظروف خاصة)', preAnalyticDelay: 'Plusieurs jours', turnaroundTime: '28 jours' },
-    { code: 'PROCALCITONINE', category: 'BIOCHEMISTRY', nameFr: 'Procalcitonine', nameAr: 'بروكالسيتونين', synonymes: 'PCT', sampleTypeFr: 'Sang', sampleTypeAr: 'دم', tubeFr: 'SEC', tubeAr: 'أنبوب جاف', method: 'Chimiluminescence (CMIA)', collectionConditionFr: null, collectionConditionAr: null, preAnalyticDelay: '1 jour', turnaroundTime: '1 jour' },
-    { code: 'PROGESTERONE', category: 'HORMONOLOGY', nameFr: 'Progestérone', nameAr: 'بروجستيرون', synonymes: null, sampleTypeFr: 'Sang', sampleTypeAr: 'دم', tubeFr: 'SEC', tubeAr: 'أنبوب جاف', method: 'Chimiluminescence (CMIA)', collectionConditionFr: null, collectionConditionAr: null, preAnalyticDelay: '1 jour', turnaroundTime: '1 jour' },
-    { code: 'PROLACTINE', category: 'HORMONOLOGY', nameFr: 'Prolactine', nameAr: 'برولاكتين', synonymes: null, sampleTypeFr: 'Sang', sampleTypeAr: 'دم', tubeFr: 'SEC', tubeAr: 'أنبوب جاف', method: 'Chimiluminescence (CMIA)', collectionConditionFr: 'À jeun, à 8h, 20 min de repos', collectionConditionAr: 'صائم، الساعة 8 صباحًا، مع 20 دقيقة راحة', preAnalyticDelay: '1 jour', turnaroundTime: '1 jour' },
-    { code: 'PROTEINES', category: 'BIOCHEMISTRY', nameFr: 'Protéines', nameAr: 'البروتينات', synonymes: 'Protides totaux', sampleTypeFr: 'Sang', sampleTypeAr: 'دم', tubeFr: 'SEC', tubeAr: 'أنبوب جاف', method: 'Colorimétrie', collectionConditionFr: null, collectionConditionAr: null, preAnalyticDelay: '1 jour', turnaroundTime: '1 jour' },
-    { code: 'PROTEINURIE', category: 'BIOCHEMISTRY', nameFr: 'Protéinurie', nameAr: 'البروتين في البول', synonymes: null, sampleTypeFr: 'Urine', sampleTypeAr: 'بول', tubeFr: 'Urines échantillon', tubeAr: 'عينة بول', method: 'Colorimétrie', collectionConditionFr: null, collectionConditionAr: null, preAnalyticDelay: '1 jour', turnaroundTime: '1 jour' },
-    { code: 'PROTEINURIE_DES_24H', category: 'BIOCHEMISTRY', nameFr: 'Protéinurie des 24h', nameAr: 'البروتين في بول 24 ساعة', synonymes: null, sampleTypeFr: 'Urine', sampleTypeAr: 'بول', tubeFr: 'Urines 24h', tubeAr: 'بول 24 ساعة', method: 'Colorimétrie', collectionConditionFr: 'Voir onglet spécifique', collectionConditionAr: 'انظر القسم المخصص', preAnalyticDelay: '1 jour', turnaroundTime: '1 jour' },
-    { code: 'PSA_LIBRE', category: 'TUMOR_MARKERS', nameFr: 'PSA libre', nameAr: 'PSA الحر', synonymes: null, sampleTypeFr: 'Sang', sampleTypeAr: 'دم', tubeFr: 'SEC', tubeAr: 'أنبوب جاف', method: 'Chimiluminescence (CMIA)', collectionConditionFr: null, collectionConditionAr: null, preAnalyticDelay: '1 jour', turnaroundTime: '1 jour' },
-    { code: 'PSA_TOTAL', category: 'TUMOR_MARKERS', nameFr: 'PSA total', nameAr: 'PSA الكلي', synonymes: null, sampleTypeFr: 'Sang', sampleTypeAr: 'دم', tubeFr: 'SEC', tubeAr: 'أنبوب جاف', method: 'Chimiluminescence (CMIA)', collectionConditionFr: null, collectionConditionAr: null, preAnalyticDelay: '1 jour', turnaroundTime: '1 jour' },
-    { code: 'PUS_PROFOND', category: 'MICROBIOLOGY', nameFr: 'Pus profond', nameAr: 'قيح عميق', synonymes: 'Examen cytobactériologique d\'un pus profond', sampleTypeFr: 'Liquide', sampleTypeAr: 'سائل', tubeFr: 'Flacon stérile', tubeAr: 'قارورة معقمة', method: null, collectionConditionFr: null, collectionConditionAr: null, preAnalyticDelay: '<24 h 2-8°C / <2 h TA', turnaroundTime: '5 jours' },
-    { code: 'PUS_SUPERFICIEL_DORIGINE_CUTANEE_OU_MUQUEUSE', category: 'MICROBIOLOGY', nameFr: 'Pus superficiel d’origine cutanée ou muqueuse', nameAr: 'قيح سطحي جلدي أو مخاطي', synonymes: 'strepto B, plaie, pus superficiel, ORL, oculaire...', sampleTypeFr: 'Cutané-muqueuse', sampleTypeAr: 'جلدي-مخاطي', tubeFr: 'Écouvillon avec milieu de transport', tubeAr: 'مسحة مع وسط نقل', method: null, collectionConditionFr: 'Délai recommandé après arrêt d\'antibiotiques: au moins 3 jours (sauf urgence ou contexte particulier)', collectionConditionAr: 'الفاصل الموصى به بعد إيقاف المضاد الحيوي: 3 أيام على الأقل (إلا في الطوارئ أو ظروف خاصة)', preAnalyticDelay: '24 heures TA', turnaroundTime: '5 jours' },
-    { code: 'PV_PU', category: 'MICROBIOLOGY', nameFr: 'PV / PU', nameAr: 'مسحة مهبلية / إحليلية', synonymes: 'Examen cytobactériologique prélèvement vaginal/urétral', sampleTypeFr: 'Muqueuse', sampleTypeAr: 'مخاطية', tubeFr: 'Écouvillon avec milieu de transport', tubeAr: 'مسحة مع وسط نقل', method: null, collectionConditionFr: 'Ovule: arrêt 1 semaine; crème/gel local: 48 h; antibiotiques pour germes banals: 1 semaine; contrôle IST: délai 5 semaines', collectionConditionAr: 'التحاميل: إيقاف أسبوع؛ الكريم/الجل الموضعي: 48 ساعة؛ المضادات الحيوية للجراثيم الشائعة: أسبوع؛ إعادة فحص IST بعد 5 أسابيع', preAnalyticDelay: '24 heures', turnaroundTime: '5 jours' },
-    { code: 'RECHERCHE_AGGLUTININES_IRREGULIERES', category: 'HEMATOLOGY', nameFr: 'Recherche agglutinines irrégulières', nameAr: 'البحث عن الأجسام المضادة غير المنتظمة', synonymes: 'RAI', sampleTypeFr: 'Sang', sampleTypeAr: 'دم', tubeFr: 'EDTA', tubeAr: 'EDTA', method: 'Méthode immunologique d\'hémagglutination', collectionConditionFr: 'Renseignements cliniques: transfusion, injection d\'AntiD; nom de naissance impératif', collectionConditionAr: 'معلومات سريرية: نقل دم أو حقن AntiD؛ اسم الولادة إلزامي', preAnalyticDelay: '1 jour', turnaroundTime: '1 jour' },
-    { code: 'RECHERCHE_DE_CLOSTRIDIUM_DIFFICILE_GDH_TOXINES_A_E', category: 'MICROBIOLOGY', nameFr: 'Recherche de Clostridium difficile (GDH + toxines A et B)', nameAr: 'البحث عن المطثية العسيرة (GDH + الذيفانان A وB)', synonymes: 'CLODIFF', sampleTypeFr: 'Selles', sampleTypeAr: 'براز', tubeFr: 'SELLES', tubeAr: 'وعاء براز', method: null, collectionConditionFr: 'RC+++ prise récente d\'antibiotiques', collectionConditionAr: 'معلومات سريرية مهمة جدًا: تناول حديث لمضادات حيوية', preAnalyticDelay: '<72 h réfrigéré / <2 h TA', turnaroundTime: '2 jours' },
-    { code: 'RECHERCHE_DE_SCHIZOCYTES', category: 'HEMATOLOGY', nameFr: 'Recherche de schizocytes', nameAr: 'البحث عن الشظايا الكرية', synonymes: null, sampleTypeFr: 'Sang', sampleTypeAr: 'دم', tubeFr: 'EDTA', tubeAr: 'EDTA', method: null, collectionConditionFr: null, collectionConditionAr: null, preAnalyticDelay: '1 jour', turnaroundTime: '1 jour' },
-    { code: 'RECHERCHE_DE_VIRUS_PAR_PCR_DANS_LES_SELLES', category: 'MICROBIOLOGY', nameFr: 'Recherche de virus par PCR dans les selles', nameAr: 'البحث عن الفيروسات في البراز بواسطة PCR', synonymes: 'Rotavirus, Adénovirus, viro des selles', sampleTypeFr: 'Selles', sampleTypeAr: 'براز', tubeFr: 'SELLES', tubeAr: 'وعاء براز', method: null, collectionConditionFr: null, collectionConditionAr: null, preAnalyticDelay: '48 h TA / <5 jours réfrigéré', turnaroundTime: '2 jours' },
-    { code: 'RESERVE_ALCALINE', category: 'BIOCHEMISTRY', nameFr: 'Réserve alcaline', nameAr: 'الاحتياطي القلوي', synonymes: 'CO2 - Bicarbonates', sampleTypeFr: 'Sang', sampleTypeAr: 'دم', tubeFr: 'SEC', tubeAr: 'أنبوب جاف', method: 'Spectrophotométrie', collectionConditionFr: null, collectionConditionAr: null, preAnalyticDelay: '4 heures', turnaroundTime: '1 jour' },
-    { code: 'RETICULOCYTES', category: 'HEMATOLOGY', nameFr: 'Réticulocytes', nameAr: 'الخلايا الشبكية', synonymes: 'RETIC, RET', sampleTypeFr: 'Sang', sampleTypeAr: 'دم', tubeFr: 'EDTA', tubeAr: 'EDTA', method: 'Cytométrie de flux - Impédance', collectionConditionFr: null, collectionConditionAr: null, preAnalyticDelay: '1 jour', turnaroundTime: '1 jour' },
-    { code: 'SCORE_DE_FIBROSE_HEPATIQUE_FIB_4', category: 'BIOCHEMISTRY', nameFr: 'Score de fibrose hépatique (FIB-4)', nameAr: 'مؤشر تليف الكبد (FIB-4)', synonymes: 'FIB-4', sampleTypeFr: null, sampleTypeAr: null, tubeFr: '1 EDTA + 1 SEC', tubeAr: '1 EDTA + 1 أنبوب جاف', method: 'Calcul', collectionConditionFr: null, collectionConditionAr: null, preAnalyticDelay: '1 jour', turnaroundTime: '1 jour' },
-    { code: 'SEROLOGIE_COVID_19_IGG', category: 'SEROLOGY', nameFr: 'Sérologie Covid-19 IgG', nameAr: 'سيرولوجيا كوفيد-19 IgG', synonymes: 'SARS COV2 IgG', sampleTypeFr: 'Sang', sampleTypeAr: 'دم', tubeFr: 'SEC', tubeAr: 'أنبوب جاف', method: null, collectionConditionFr: null, collectionConditionAr: null, preAnalyticDelay: '1 jour', turnaroundTime: '1 jour' },
-    { code: 'SEROLOGIE_CYTOMEGALOVIRUS', category: 'SEROLOGY', nameFr: 'Sérologie Cytomégalovirus', nameAr: 'سيرولوجيا CMV', synonymes: 'CMV', sampleTypeFr: 'Sang', sampleTypeAr: 'دم', tubeFr: 'SEC', tubeAr: 'أنبوب جاف', method: 'Chimiluminescence (CMIA)', collectionConditionFr: null, collectionConditionAr: null, preAnalyticDelay: '1 jour', turnaroundTime: '1 jour' },
-    { code: 'SEROLOGIE_EBV', category: 'SEROLOGY', nameFr: 'Sérologie EBV', nameAr: 'سيرولوجيا EBV', synonymes: 'MNI', sampleTypeFr: 'Sang', sampleTypeAr: 'دم', tubeFr: 'SEC', tubeAr: 'أنبوب جاف', method: 'Chimiluminescence (CMIA)', collectionConditionFr: null, collectionConditionAr: null, preAnalyticDelay: '1 jour', turnaroundTime: '1 jour' },
-    { code: 'SEROLOGIE_RUBEOLE_IGG', category: 'SEROLOGY', nameFr: 'Sérologie Rubéole IgG', nameAr: 'سيرولوجيا الحصبة الألمانية IgG', synonymes: 'Rub', sampleTypeFr: 'Sang', sampleTypeAr: 'دم', tubeFr: 'SEC', tubeAr: 'أنبوب جاف', method: 'Chimiluminescence (CMIA)', collectionConditionFr: null, collectionConditionAr: null, preAnalyticDelay: '1 jour', turnaroundTime: '1 jour' },
-    { code: 'SODIUM', category: 'BIOCHEMISTRY', nameFr: 'Sodium', nameAr: 'صوديوم', synonymes: 'Na, iono', sampleTypeFr: 'Sang', sampleTypeAr: 'دم', tubeFr: 'SEC', tubeAr: 'أنبوب جاف', method: 'Potentiométrie indirecte', collectionConditionFr: null, collectionConditionAr: null, preAnalyticDelay: '1 jour', turnaroundTime: '1 jour' },
-    { code: 'SODIUM_URINAIRE', category: 'BIOCHEMISTRY', nameFr: 'Sodium urinaire', nameAr: 'الصوديوم في البول', synonymes: null, sampleTypeFr: 'Urine', sampleTypeAr: 'بول', tubeFr: 'Urines échantillon', tubeAr: 'عينة بول', method: 'Potentiométrie indirecte', collectionConditionFr: null, collectionConditionAr: null, preAnalyticDelay: '1 jour', turnaroundTime: '1 jour' },
-    { code: 'SODIUM_URINAIRE_DES_24_HEURES', category: 'BIOCHEMISTRY', nameFr: 'Sodium urinaire des 24 heures', nameAr: 'الصوديوم في بول 24 ساعة', synonymes: null, sampleTypeFr: 'Urine', sampleTypeAr: 'بول', tubeFr: 'Urines 24h', tubeAr: 'بول 24 ساعة', method: 'Potentiométrie indirecte', collectionConditionFr: null, collectionConditionAr: null, preAnalyticDelay: '1 jour', turnaroundTime: '1 jour' },
-    { code: 'SPERMOCULTURE', category: 'MICROBIOLOGY', nameFr: 'Spermoculture', nameAr: 'زرع السائل المنوي', synonymes: null, sampleTypeFr: 'Sperme', sampleTypeAr: 'مني', tubeFr: 'Flacon stérile', tubeAr: 'قارورة معقمة', method: null, collectionConditionFr: null, collectionConditionAr: null, preAnalyticDelay: '<2 h TA', turnaroundTime: '5 jours' },
-    { code: 'STERILET', category: 'MICROBIOLOGY', nameFr: 'Stérilet', nameAr: 'لولب رحمي', synonymes: 'DIUT', sampleTypeFr: null, sampleTypeAr: null, tubeFr: 'Flacon stérile', tubeAr: 'قارورة معقمة', method: null, collectionConditionFr: null, collectionConditionAr: null, preAnalyticDelay: '<4 h TA', turnaroundTime: '5 jours' },
-    { code: 'SEROLOGIE_SYPHILIS_TREPONEMATOSES', category: 'SEROLOGY', nameFr: 'Sérologie Syphilis - Tréponematoses', nameAr: 'سيرولوجيا الزهري - اللولبيات', synonymes: 'TPHA BW IST', sampleTypeFr: 'Sang', sampleTypeAr: 'دم', tubeFr: 'SEC', tubeAr: 'أنبوب جاف', method: 'Chimiluminescence (CMIA)', collectionConditionFr: 'Dépistage IST sans avance de frais au labo si moins de 26 ans', collectionConditionAr: 'تحري الأمراض المنقولة جنسيًا بدون دفع مسبق بالمختبر إذا كان العمر أقل من 26 سنة', preAnalyticDelay: '1 jour', turnaroundTime: '1 jour' },
-    { code: 'T3_LIBRE', category: 'HORMONOLOGY', nameFr: 'T3 libre', nameAr: 'T3 الحر', synonymes: 'T3L', sampleTypeFr: 'Sang', sampleTypeAr: 'دم', tubeFr: 'SEC', tubeAr: 'أنبوب جاف', method: 'Chimiluminescence (CMIA)', collectionConditionFr: null, collectionConditionAr: null, preAnalyticDelay: '1 jour', turnaroundTime: '1 jour' },
-    { code: 'T4_LIBRE', category: 'HORMONOLOGY', nameFr: 'T4 libre', nameAr: 'T4 الحر', synonymes: 'T4L', sampleTypeFr: 'Sang', sampleTypeAr: 'دم', tubeFr: 'SEC', tubeAr: 'أنبوب جاف', method: 'Chimiluminescence (CMIA)', collectionConditionFr: null, collectionConditionAr: null, preAnalyticDelay: '1 jour', turnaroundTime: '1 jour' },
-    { code: 'TAUX_DE_REABSORPTION_TUBULAIRE_DU_PHOSPHORE', category: 'BIOCHEMISTRY', nameFr: 'Taux de réabsorption tubulaire du phosphore', nameAr: 'معدل إعادة الامتصاص الأنبوبي للفوسفور', synonymes: 'TRP', sampleTypeFr: 'Urines et sérum', sampleTypeAr: 'بول ومصل', tubeFr: null, tubeAr: null, method: 'Calcul', collectionConditionFr: null, collectionConditionAr: null, preAnalyticDelay: '1 jour', turnaroundTime: '1 jour' },
-    { code: 'TCK_TEMPS_CEPHALINE_KAOLIN', category: 'HEMOSTASIS', nameFr: 'TCK (Temps céphaline kaolin)', nameAr: 'TCK (زمن السيفالين كاولين)', synonymes: 'TCK', sampleTypeFr: 'Sang', sampleTypeAr: 'دم', tubeFr: 'CITRATE', tubeAr: 'سيترات', method: 'Chronométrie automatisée STA R-max (Stago)', collectionConditionFr: 'Tube rempli', collectionConditionAr: 'يجب أن يكون الأنبوب ممتلئًا', preAnalyticDelay: '6 heures', turnaroundTime: '1 jour' },
-    { code: 'TEST_AU_SYNACTHENE', category: 'HORMONOLOGY', nameFr: 'Test au Synacthène', nameAr: 'اختبار السيناكتين', synonymes: 'SYN30, SYN60', sampleTypeFr: 'Sang', sampleTypeAr: 'دم', tubeFr: 'SEC', tubeAr: 'أنبوب جاف', method: 'Chimiluminescence (CMIA)', collectionConditionFr: 'Protocole spécifique – à jeun', collectionConditionAr: 'بروتوكول خاص – صائم', preAnalyticDelay: '1 jour', turnaroundTime: '1 jour' },
-    { code: 'TESTOSTERONE', category: 'HORMONOLOGY', nameFr: 'Testostérone', nameAr: 'تستوستيرون', synonymes: 'TEST', sampleTypeFr: 'Sang', sampleTypeAr: 'دم', tubeFr: 'SEC', tubeAr: 'أنبوب جاف', method: null, collectionConditionFr: null, collectionConditionAr: null, preAnalyticDelay: '1 jour', turnaroundTime: '2 jours' },
-    { code: 'TOXOPLASMOSE', category: 'SEROLOGY', nameFr: 'Toxoplasmose', nameAr: 'داء المقوسات', synonymes: null, sampleTypeFr: 'Sang', sampleTypeAr: 'دم', tubeFr: 'SEC', tubeAr: 'أنبوب جاف', method: 'Chimiluminescence (CMIA)', collectionConditionFr: null, collectionConditionAr: null, preAnalyticDelay: '1 jour', turnaroundTime: '1 jour' },
-    { code: 'TP_INR', category: 'HEMOSTASIS', nameFr: 'TP / INR', nameAr: 'TP / INR', synonymes: 'INR', sampleTypeFr: 'Sang', sampleTypeAr: 'دم', tubeFr: 'CITRATE', tubeAr: 'سيترات', method: 'Chronométrie automatisée', collectionConditionFr: 'Tube rempli; traitement + cible thérapeutique', collectionConditionAr: 'يجب أن يكون الأنبوب ممتلئًا؛ يُذكر العلاج والهدف العلاجي', preAnalyticDelay: '8 heures', turnaroundTime: '1 jour (AVK) / 1 jour' },
-    { code: 'TRANSFERRINE', category: 'BIOCHEMISTRY', nameFr: 'Transferrine', nameAr: 'ترانسفيرين', synonymes: 'Sidérophiline', sampleTypeFr: 'Sang', sampleTypeAr: 'دم', tubeFr: 'SEC', tubeAr: 'أنبوب جاف', method: 'Immunoturbidimétrie', collectionConditionFr: null, collectionConditionAr: null, preAnalyticDelay: '1 jour', turnaroundTime: '1 jour' },
-    { code: 'TRIGLYCERIDES', category: 'BIOCHEMISTRY', nameFr: 'Triglycérides', nameAr: 'الدهون الثلاثية', synonymes: 'TG', sampleTypeFr: 'Sang', sampleTypeAr: 'دم', tubeFr: 'SEC', tubeAr: 'أنبوب جاف', method: 'Colorimétrie', collectionConditionFr: 'A jeun', collectionConditionAr: 'صائم', preAnalyticDelay: '1 jour', turnaroundTime: '1 jour' },
-    { code: 'TROPONINE_I_HYPERSENSIBLE', category: 'BIOCHEMISTRY', nameFr: 'Troponine I hypersensible', nameAr: 'تروبونين I عالي الحساسية', synonymes: 'Tropo', sampleTypeFr: 'Sang', sampleTypeAr: 'دم', tubeFr: 'SEC', tubeAr: 'أنبوب جاف', method: 'Chimiluminescence (CMIA)', collectionConditionFr: 'Paramètre d\'urgence', collectionConditionAr: 'مؤشر إسعافي', preAnalyticDelay: '8 heures', turnaroundTime: '3 h' },
-    { code: 'TSH', category: 'HORMONOLOGY', nameFr: 'TSH', nameAr: 'TSH', synonymes: null, sampleTypeFr: 'Sang', sampleTypeAr: 'دم', tubeFr: 'SEC', tubeAr: 'أنبوب جاف', method: 'Chimiluminescence (CMIA)', collectionConditionFr: 'Prélever toujours dans les mêmes conditions (prise de médicament)', collectionConditionAr: 'يُسحب دائمًا في الظروف نفسها (بالنسبة لتناول الدواء)', preAnalyticDelay: '1 jour', turnaroundTime: '1 jour' },
-    { code: 'UREE', category: 'BIOCHEMISTRY', nameFr: 'Urée', nameAr: 'يوريا', synonymes: null, sampleTypeFr: 'Sang', sampleTypeAr: 'دم', tubeFr: 'SEC', tubeAr: 'أنبوب جاف', method: 'Spectrophotométrie', collectionConditionFr: null, collectionConditionAr: null, preAnalyticDelay: '1 jour', turnaroundTime: '1 jour' },
-    { code: 'UREE_URINAIRE', category: 'BIOCHEMISTRY', nameFr: 'Urée urinaire', nameAr: 'اليوريا في البول', synonymes: null, sampleTypeFr: 'Urine', sampleTypeAr: 'بول', tubeFr: 'Urines échantillon', tubeAr: 'عينة بول', method: 'Spectrophotométrie', collectionConditionFr: null, collectionConditionAr: null, preAnalyticDelay: '1 jour', turnaroundTime: '1 jour' },
-    { code: 'UREE_URINAIRE_24H', category: 'BIOCHEMISTRY', nameFr: 'Urée urinaire (24h)', nameAr: 'اليوريا في بول 24 ساعة', synonymes: null, sampleTypeFr: 'Urine', sampleTypeAr: 'بول', tubeFr: 'Urines 24h', tubeAr: 'بول 24 ساعة', method: 'Spectrophotométrie', collectionConditionFr: null, collectionConditionAr: null, preAnalyticDelay: '1 jour', turnaroundTime: '1 jour' },
-    { code: 'UROBILINOGENE', category: 'BIOCHEMISTRY', nameFr: 'Urobilinogène', nameAr: 'يوروبيلينوجين', synonymes: 'Sels et pigments biliaires urinaires', sampleTypeFr: 'Urine', sampleTypeAr: 'بول', tubeFr: 'Urines échantillon', tubeAr: 'عينة بول', method: 'Colorimétrie', collectionConditionFr: null, collectionConditionAr: null, preAnalyticDelay: '2 h AMB / 1 jour (4°C)', turnaroundTime: '1 jour' },
-    { code: 'VITAMINE_A', category: 'BIOCHEMISTRY', nameFr: 'Vitamine A', nameAr: 'فيتامين A', synonymes: 'Rétinol', sampleTypeFr: 'Sang', sampleTypeAr: 'دم', tubeFr: 'SEC SANS GEL', tubeAr: 'أنبوب جاف بدون جل', method: null, collectionConditionFr: 'Congélation dans les 6h; tubes à l\'abri de la lumière (ne pas emballer le tube)', collectionConditionAr: 'يُجمّد خلال 6 ساعات؛ تُحمى الأنابيب من الضوء (من دون لف الأنبوب)', preAnalyticDelay: '6 h', turnaroundTime: '4 jours' },
-    { code: 'VITAMINE_B1', category: 'BIOCHEMISTRY', nameFr: 'Vitamine B1', nameAr: 'فيتامين B1', synonymes: 'THIAMINE VB1ST', sampleTypeFr: 'Sang', sampleTypeAr: 'دم', tubeFr: 'EDTA', tubeAr: 'EDTA', method: null, collectionConditionFr: '46 euros HN; congélation dans les 6h; tubes à l\'abri de la lumière (ne pas emballer le tube)', collectionConditionAr: '46 يورو خارج التعرفة؛ يُجمّد خلال 6 ساعات؛ تُحمى الأنابيب من الضوء (من دون لف الأنبوب)', preAnalyticDelay: '6 h', turnaroundTime: '7 jours' },
-    { code: 'VITAMINE_B12', category: 'BIOCHEMISTRY', nameFr: 'Vitamine B12', nameAr: 'فيتامين B12', synonymes: null, sampleTypeFr: 'Sang', sampleTypeAr: 'دم', tubeFr: 'SEC', tubeAr: 'أنبوب جاف', method: 'Spectrophotométrie', collectionConditionFr: null, collectionConditionAr: null, preAnalyticDelay: '1 jour', turnaroundTime: '1 jour' },
-    { code: 'VITAMINE_B6', category: 'BIOCHEMISTRY', nameFr: 'Vitamine B6', nameAr: 'فيتامين B6', synonymes: 'VB6ST', sampleTypeFr: null, sampleTypeAr: null, tubeFr: 'EDTA', tubeAr: 'EDTA', method: null, collectionConditionFr: 'Congélation dans les 6h; tubes à l\'abri de la lumière (ne pas emballer le tube)', collectionConditionAr: 'يُجمّد خلال 6 ساعات؛ تُحمى الأنابيب من الضوء (من دون لف الأنبوب)', preAnalyticDelay: '6 h', turnaroundTime: '7 jours' },
-    { code: 'VITAMINE_D_25_OH', category: 'BIOCHEMISTRY', nameFr: 'Vitamine D 25-OH', nameAr: 'فيتامين D 25-OH', synonymes: 'Vitamine D', sampleTypeFr: 'Sang', sampleTypeAr: 'دم', tubeFr: 'SEC', tubeAr: 'أنبوب جاف', method: 'Chimiluminescence (CMIA)', collectionConditionFr: null, collectionConditionAr: null, preAnalyticDelay: '1 jour', turnaroundTime: '1 jour' },
-    { code: 'VITAMINE_E', category: 'BIOCHEMISTRY', nameFr: 'Vitamine E', nameAr: 'فيتامين E', synonymes: 'Tocophérol', sampleTypeFr: 'Sang', sampleTypeAr: 'دم', tubeFr: 'SEC SANS GEL', tubeAr: 'أنبوب جاف بدون جل', method: null, collectionConditionFr: 'Congélation dans les 6h; tubes à l\'abri de la lumière (ne pas emballer le tube)', collectionConditionAr: 'يُجمّد خلال 6 ساعات؛ تُحمى الأنابيب من الضوء (من دون لف الأنبوب)', preAnalyticDelay: '6 h', turnaroundTime: '7 jours' },
-    { code: 'ZINC', category: 'BIOCHEMISTRY', nameFr: 'Zinc', nameAr: 'زنك', synonymes: 'Zn', sampleTypeFr: 'Sang', sampleTypeAr: 'دم', tubeFr: 'SEC SANS GEL', tubeAr: 'أنبوب جاف بدون جل', method: null, collectionConditionFr: null, collectionConditionAr: null, preAnalyticDelay: '1 jour', turnaroundTime: '4 jours' },
-  ];
+  const filePath = path.resolve(__dirname, 'data', 'mlms_tests.json');
+  if (!fs.existsSync(filePath)) {
+    console.warn('  ⚠ mlms_tests.json not found — skipping test definitions');
+    return;
+  }
 
-  // Enrich catalogue entries with Arabic translations
-  const enrichedCatalogue = catalogue.map((entry) => ({
-    ...entry,
-    preAnalyticDelayAr: entry.preAnalyticDelay ? (delayTranslations[entry.preAnalyticDelay] ?? null) : null,
-    turnaroundTimeAr: entry.turnaroundTime ? (tatTranslations[entry.turnaroundTime] ?? null) : null,
-  }));
+  const raw = fs.readFileSync(filePath, 'utf-8');
+  const data = JSON.parse(raw) as { items: JsonTestItem[] };
+  const items = data.items;
 
+  // 1. Upsert TestPanels
+  const panelMap = new Map<string, { name: string; parentName: string | null; order: number }>();
+  for (const item of items) {
+    if (item.testPanelId && !panelMap.has(item.testPanelId)) {
+      panelMap.set(item.testPanelId, {
+        name: item.testPanelName,
+        parentName: item.testPanelParentName ?? null,
+        order: item.testPanelOrder ?? 0,
+      });
+    }
+  }
+
+  let panelsUpserted = 0;
+  for (const [id, panel] of Array.from(panelMap.entries())) {
+    await prisma.testPanel.upsert({
+      where: { id },
+      update: { name: panel.name, parentName: panel.parentName, order: panel.order },
+      create: { id, name: panel.name, parentName: panel.parentName, order: panel.order },
+    });
+    panelsUpserted++;
+  }
+  console.log(`  ✓ ${panelsUpserted} test panels upserted`);
+
+  // 2. Upsert TestDefinitions
   let upserted = 0;
-  for (const entry of enrichedCatalogue) {
+  let skipped = 0;
+
+  for (const item of items) {
+    if (!item.code || !item.name) { skipped++; continue; }
+
+    const category = mapCategory(item.testPanelParentName, item.testPanelName);
+    const referenceRange = parseReferenceRange(item.referenceRange);
+    const secondaryReferenceRange = parseReferenceRange(item.secondaryReferenceRange);
+
     await prisma.testDefinition.upsert({
-      where: { code: entry.code },
+      where: { code: item.code },
       update: {
-        nameFr: entry.nameFr,
-        nameAr: entry.nameAr,
-        synonymes: entry.synonymes,
-        sampleTypeFr: entry.sampleTypeFr,
-        sampleTypeAr: entry.sampleTypeAr,
-        tubeFr: entry.tubeFr,
-        tubeAr: entry.tubeAr,
-        method: entry.method,
-        collectionConditionFr: entry.collectionConditionFr,
-        collectionConditionAr: entry.collectionConditionAr,
-        preAnalyticDelay: entry.preAnalyticDelay,
-        preAnalyticDelayAr: entry.preAnalyticDelayAr,
-        turnaroundTime: entry.turnaroundTime,
-        turnaroundTimeAr: entry.turnaroundTimeAr,
+        nameFr: item.name,
+        category,
+        unit: item.units || null,
+        secondaryUnit: item.secondaryUnits || null,
+        referenceRange: referenceRange ?? undefined,
+        secondaryReferenceRange: secondaryReferenceRange ?? undefined,
+        criticalLow: item.criticalLow || null,
+        criticalHigh: item.criticalHigh || null,
+        isActive: true,
+        fastingRequired: item.requiresFasting ?? false,
+        turnaroundTimeMinutes: item.turnaroundTimeMinutes || null,
+        price: item.price > 0 ? item.price : null,
+        cost: item.cost > 0 ? item.cost : null,
+        loincCode: item.loincCode || null,
+        alias: item.alias || null,
+        calculationFormula: item.calculationFormula || null,
+        analyticalInstrument: item.analyticalInstrument || null,
+        specialNotesFr: item.testComments || null,
+        panelId: item.testPanelId || null,
       },
       create: {
-        code: entry.code,
-        nameFr: entry.nameFr,
-        nameAr: entry.nameAr,
-        category: entry.category,
+        code: item.code,
+        nameFr: item.name,
+        nameAr: '',
+        category,
+        unit: item.units || null,
+        secondaryUnit: item.secondaryUnits || null,
+        referenceRange: referenceRange ?? undefined,
+        secondaryReferenceRange: secondaryReferenceRange ?? undefined,
+        criticalLow: item.criticalLow || null,
+        criticalHigh: item.criticalHigh || null,
         isActive: true,
-        subcontracted: false,
-        fastingRequired: false,
-        lightSensitive: false,
-        synonymes: entry.synonymes,
-        sampleTypeFr: entry.sampleTypeFr,
-        sampleTypeAr: entry.sampleTypeAr,
-        tubeFr: entry.tubeFr,
-        tubeAr: entry.tubeAr,
-        method: entry.method,
-        collectionConditionFr: entry.collectionConditionFr,
-        collectionConditionAr: entry.collectionConditionAr,
-        preAnalyticDelay: entry.preAnalyticDelay,
-        preAnalyticDelayAr: entry.preAnalyticDelayAr,
-        turnaroundTime: entry.turnaroundTime,
-        turnaroundTimeAr: entry.turnaroundTimeAr,
+        fastingRequired: item.requiresFasting ?? false,
+        turnaroundTimeMinutes: item.turnaroundTimeMinutes || null,
+        price: item.price > 0 ? item.price : null,
+        cost: item.cost > 0 ? item.cost : null,
+        loincCode: item.loincCode || null,
+        alias: item.alias || null,
+        calculationFormula: item.calculationFormula || null,
+        analyticalInstrument: item.analyticalInstrument || null,
+        specialNotesFr: item.testComments || null,
+        panelId: item.testPanelId || null,
       },
     });
     upserted++;
   }
 
-  console.log(`  ✓ ${upserted} test definitions upserted from catalogue`);
+  if (skipped > 0) console.warn(`  ⚠ ${skipped} items skipped (missing code or name)`);
+  console.log(`  ✓ ${upserted} test definitions upserted from mlms_tests.json`);
+}
+
+// ─── Reference Values (gender-specific) ──────────────────────────────────────
+
+interface RefValueEntry {
+  codes: string[];
+  referenceRange: Record<string, string>;
+  referenceLow?: number;
+  referenceHigh?: number;
+  unit?: string;
+}
+
+async function seedReferenceValues() {
+  const filePath = path.resolve(__dirname, 'data', 'mlms_reference_values.json');
+  if (!fs.existsSync(filePath)) {
+    console.warn('  ⚠ mlms_reference_values.json not found — skipping reference values');
+    return;
+  }
+  const entries: RefValueEntry[] = JSON.parse(fs.readFileSync(filePath, 'utf-8'));
+  let updated = 0;
+
+  for (const entry of entries) {
+    const data: Record<string, unknown> = { referenceRange: entry.referenceRange };
+    if (entry.referenceLow !== undefined) data['referenceLow'] = entry.referenceLow;
+    if (entry.referenceHigh !== undefined) data['referenceHigh'] = entry.referenceHigh;
+    if (entry.unit) data['unit'] = entry.unit;
+
+    for (const code of entry.codes) {
+      const result = await prisma.testDefinition.updateMany({ where: { code }, data });
+      updated += result.count;
+    }
+  }
+  console.log(`  ✓ ${updated} test definitions updated with gender-specific reference values`);
 }
 
 // ─── Storage Locations ────────────────────────────────────────────────────────
@@ -446,6 +421,48 @@ async function seedReagents() {
   console.log(`  ✓ ${reagents.length} reagents seeded`);
 }
 
+// ─── Practitioners ───────────────────────────────────────────────────────────
+
+async function seedPractitioners() {
+  const practitioners = [
+    {
+      fullName: 'Dr Larousse',
+      email: 'larousse@sante.com',
+      speciality: 'Médecine Générale',
+    },
+    {
+      fullName: 'Dr Laroche',
+      email: 'pad@pchu.fr',
+      speciality: 'Pédiatrie',
+    },
+    {
+      fullName: 'Dr. Martin Rodger',
+      email: 'martin.rodget@gmail.com',
+      speciality: 'Cardiologie',
+    },
+    {
+      fullName: 'Dr X',
+      email: 'bensakhria.ayoub@gmail.com',
+      speciality: 'Biologie Médicale',
+    },
+  ];
+
+  for (const p of practitioners) {
+    await prisma.practitioner.upsert({
+      where: { email: p.email },
+      update: {},
+      create: {
+        fullName: p.fullName,
+        email: p.email,
+        speciality: p.speciality,
+        isActive: true,
+      },
+    });
+  }
+
+  console.log(`  ✓ ${practitioners.length} practitioners seeded`);
+}
+
 // ─── Patients ─────────────────────────────────────────────────────────────────
 
 async function seedPatients() {
@@ -471,6 +488,493 @@ async function seedPatients() {
   console.log(`  ✓ ${patients.length} patients seeded`);
 }
 
+// ─── QC Materials ────────────────────────────────────────────────────────────
+
+async function seedQCMaterials() {
+  const raw = JSON.parse(fs.readFileSync(path.join(__dirname, 'data/mlms_qc_material.json'), 'utf-8'));
+  const items = raw.items ?? [];
+  for (const m of items) {
+    await prisma.qCMaterial.upsert({
+      where: { barcode: m.barcode },
+      update: {},
+      create: {
+        barcode: m.barcode,
+        name: m.name,
+        lotNumber: m.lotNumber,
+        manufacturer: m.manufacturer,
+        expirationDate: new Date(m.expirationDate),
+        expectedValue: Number(m.expectedValue),
+        standardDeviation: Number(m.standardDeviation),
+        isActive: m.isActive ?? true,
+      },
+    });
+  }
+  console.log(`  ✓ ${items.length} QC materials seeded`);
+}
+
+// ─── QC Schedules + Results ──────────────────────────────────────────────────
+
+const scheduleStatusMap: Record<string, QCScheduleStatus> = {
+  Pending: QCScheduleStatus.PENDING,
+  InProgress: QCScheduleStatus.IN_PROGRESS,
+  Completed: QCScheduleStatus.COMPLETED,
+  Cancelled: QCScheduleStatus.CANCELLED,
+};
+
+const resultStatusMap: Record<string, QCResultStatus> = {
+  Pending: QCResultStatus.PENDING,
+  Accepted: QCResultStatus.ACCEPTED,
+  Rejected: QCResultStatus.REJECTED,
+};
+
+const alertMap: Record<string, QCAlert> = {
+  Gray: QCAlert.GRAY,
+  Green: QCAlert.GREEN,
+  Yellow: QCAlert.YELLOW,
+  Red: QCAlert.RED,
+};
+
+async function seedQCSchedules() {
+  const raw = JSON.parse(fs.readFileSync(path.join(__dirname, 'data/mlms_qc_schedule.json'), 'utf-8'));
+  const items = raw.items ?? [];
+  for (const s of items) {
+    await prisma.qCSchedule.create({
+      data: {
+        barcode: s.barcode,
+        qcRuleName: s.qcRuleName,
+        scheduledDate: new Date(s.scheduledDate),
+        duration: s.duration ?? 60,
+        status: scheduleStatusMap[s.qcScheduleStatus] ?? QCScheduleStatus.PENDING,
+      },
+    });
+  }
+  console.log(`  ✓ ${items.length} QC schedules seeded`);
+}
+
+async function seedQCResults() {
+  const raw = JSON.parse(fs.readFileSync(path.join(__dirname, 'data/mlms_qc_result.json'), 'utf-8'));
+  const items = raw.items ?? [];
+  for (const r of items) {
+    await prisma.qCResult.create({
+      data: {
+        testName: r.testName ?? '',
+        resultValue: r.resultValue || null,
+        performedDate: new Date(r.performedDate),
+        performedBy: r.performedBy || null,
+        status: resultStatusMap[r.qcResultStatus] ?? QCResultStatus.PENDING,
+        acceptableLimitLow: Number(r.acceptableLimitLow ?? 0),
+        acceptableLimitHigh: Number(r.acceptableLimitHigh ?? 0),
+        warningLimitLow: Number(r.warningLimitLow ?? 0),
+        warningLimitHigh: Number(r.warningLimitHigh ?? 0),
+        qualitativeObservation: r.qualitativeObservation || null,
+        alert: alertMap[r.alert] ?? QCAlert.GRAY,
+        comments: r.comments || null,
+      },
+    });
+  }
+  console.log(`  ✓ ${items.length} QC results seeded`);
+}
+
+// ─── Pricing Tiers ───────────────────────────────────────────────────────────
+
+async function seedPricingTiers() {
+  const raw = JSON.parse(fs.readFileSync(path.join(__dirname, 'data/mlms_pricingTier.json'), 'utf-8'));
+  const items = raw.items ?? [];
+  for (const t of items) {
+    await prisma.pricingTier.create({
+      data: {
+        name: t.name,
+        description: t.description || null,
+        isActive: t.isActive ?? true,
+        defaultRate: Number(t.defaultRate ?? 0),
+        notes: t.notes || null,
+      },
+    });
+  }
+  console.log(`  ✓ ${items.length} pricing tiers seeded`);
+}
+
+// ─── Samples ─────────────────────────────────────────────────────────────────
+
+async function seedSamples() {
+  const raw = JSON.parse(fs.readFileSync(path.join(__dirname, 'data/mlms_sample.json'), 'utf-8'));
+  // Single object (not paginated)
+  const items = Array.isArray(raw) ? raw : (raw.items ?? [raw]);
+  for (const s of items) {
+    if (!s.sampleCode) continue;
+    await prisma.sample.upsert({
+      where: { sampleCode: s.sampleCode },
+      update: {},
+      create: {
+        sampleCode: s.sampleCode,
+        name: s.name,
+        sampleType: s.sampleType ?? 'Unknown',
+        sampleDescription: s.sampleDescription || null,
+        collectionMethod: s.collectionMethod || null,
+        containerType: s.containerType || null,
+        storageConditions: s.storageConditions || null,
+        handlingInstructions: s.handlingInstructions || null,
+        sampleStatus: s.sampleStatus ?? 'Active',
+        qcPassed: s.qcPassed ?? true,
+        qcNotes: s.qcNotes || null,
+      },
+    });
+  }
+  console.log(`  ✓ ${items.length} samples seeded`);
+}
+
+// ─── Sample Inventory Lines ───────────────────────────────────────────────────
+
+const inventoryStatusMap: Record<string, SampleInventoryStatus> = {
+  Received: SampleInventoryStatus.RECEIVED,
+  InStorage: SampleInventoryStatus.IN_STORAGE,
+  InUse: SampleInventoryStatus.IN_USE,
+  Disposed: SampleInventoryStatus.DISPOSED,
+  Expired: SampleInventoryStatus.EXPIRED,
+};
+
+async function seedSampleInventoryLines() {
+  const raw = JSON.parse(fs.readFileSync(path.join(__dirname, 'data/mlms_sample_inventory_lines.json'), 'utf-8'));
+  const items = raw.items ?? [];
+  for (const l of items) {
+    if (!l.inventoryCode) continue;
+    await prisma.sampleInventoryLine.upsert({
+      where: { inventoryCode: l.inventoryCode },
+      update: {},
+      create: {
+        barcode: l.barcode ?? '',
+        inventoryCode: l.inventoryCode,
+        receptionDate: new Date(l.receptionDate),
+        receivedBy: l.receivedBy || null,
+        currentLocation: l.currentLocation || null,
+        currentStatus: inventoryStatusMap[l.currentStatus] ?? SampleInventoryStatus.RECEIVED,
+        quantity: l.quantity ?? 1,
+        unit: l.unit || null,
+        collectionDate: l.collectionDate ? new Date(l.collectionDate) : null,
+        collectionSite: l.collectionSite || null,
+        collectedBy: l.collectedBy || null,
+        qcPassed: l.qcPassed ?? false,
+        qcNotes: l.qcNotes || null,
+        conservationMethod: l.conservationMethod || null,
+        expirationDate: l.expirationDate ? new Date(l.expirationDate) : null,
+        history: l.history ? JSON.parse(typeof l.history === 'string' ? l.history : JSON.stringify(l.history)) : null,
+      },
+    });
+  }
+  console.log(`  ✓ ${items.length} sample inventory lines seeded`);
+}
+
+// ─── Instruments ──────────────────────────────────────────────────────────────
+
+type JsonInstrument = {
+  code: string;
+  name: string;
+  manufacturer: string;
+  model: string;
+  category: string;
+  protocolType: string;
+  transportType: string;
+  directionMode: string;
+  defaultPort: number | null;
+  defaultBaudRate?: number | null;
+  notes?: string;
+  _comment?: string;
+};
+
+const PROTOCOL_MAP: Record<string, InstrumentProtocolType> = {
+  HL7: InstrumentProtocolType.HL7,
+  ASTM: InstrumentProtocolType.ASTM,
+  PROPRIETARY: InstrumentProtocolType.PROPRIETARY,
+  // legacy aliases from catalog JSON
+  VENDOR_CUSTOM: InstrumentProtocolType.PROPRIETARY,
+  FILE_IMPORT: InstrumentProtocolType.PROPRIETARY,
+  FILE_EXPORT: InstrumentProtocolType.PROPRIETARY,
+};
+
+const TRANSPORT_MAP: Record<string, InstrumentTransportType> = {
+  TCP: InstrumentTransportType.TCP,
+  SERIAL: InstrumentTransportType.SERIAL,
+  FILE_SYSTEM: InstrumentTransportType.FILE_SYSTEM,
+};
+
+const DIRECTION_MAP: Record<string, InstrumentDirectionMode> = {
+  UNIDIRECTIONAL: InstrumentDirectionMode.UNIDIRECTIONAL,
+  BIDIRECTIONAL: InstrumentDirectionMode.BIDIRECTIONAL,
+};
+
+async function seedInstrumentCatalog() {
+  const filePath = path.join(__dirname, 'data', 'mlms_instruments.json');
+  const items: JsonInstrument[] = JSON.parse(fs.readFileSync(filePath, 'utf-8'));
+
+  const instruments = items.filter((i) => i.code);
+
+  for (const item of instruments) {
+    const protocol = PROTOCOL_MAP[item.protocolType];
+    const transport = TRANSPORT_MAP[item.transportType];
+    const direction = DIRECTION_MAP[item.directionMode];
+
+    if (!protocol || !transport || !direction) {
+      console.warn(`  ⚠ Skipping catalog entry ${item.code}: unknown protocol/transport/direction`);
+      continue;
+    }
+
+    await prisma.instrumentCatalog.upsert({
+      where: { code: item.code },
+      update: {
+        name: item.name,
+        manufacturer: item.manufacturer,
+        model: item.model,
+        category: item.category ?? null,
+        protocolType: protocol,
+        transportType: transport,
+        directionMode: direction,
+        defaultPort: item.defaultPort ?? null,
+        defaultBaudRate: item.defaultBaudRate ?? null,
+        notes: item.notes ?? null,
+      },
+      create: {
+        code: item.code,
+        name: item.name,
+        manufacturer: item.manufacturer,
+        model: item.model,
+        category: item.category ?? null,
+        protocolType: protocol,
+        transportType: transport,
+        directionMode: direction,
+        defaultPort: item.defaultPort ?? null,
+        defaultBaudRate: item.defaultBaudRate ?? null,
+        notes: item.notes ?? null,
+      },
+    });
+  }
+
+  console.log(`  ✓ ${instruments.length} instrument catalog entries seeded`);
+}
+
+// ─── cobas c 311 (Klinische Chemie) ───────────────────────────────────────────
+
+async function seedCobasC311() {
+  const instrument = await prisma.instrument.upsert({
+    where: { code: 'COBAS_C311' },
+    update: {
+      name: 'cobas c 311',
+      manufacturer: 'Roche Diagnostics',
+      model: 'cobas c 311',
+      protocolType: InstrumentProtocolType.ASTM,
+      transportType: InstrumentTransportType.TCP,
+      directionMode: InstrumentDirectionMode.BIDIRECTIONAL,
+      isActive: true,
+      location: 'Labo Biochimie',
+    },
+    create: {
+      code: 'COBAS_C311',
+      name: 'cobas c 311',
+      manufacturer: 'Roche Diagnostics',
+      model: 'cobas c 311',
+      protocolType: InstrumentProtocolType.ASTM,
+      transportType: InstrumentTransportType.TCP,
+      directionMode: InstrumentDirectionMode.BIDIRECTIONAL,
+      isActive: true,
+      location: 'Labo Biochimie',
+    },
+  });
+
+  await prisma.instrumentConnection.upsert({
+    where: { instrumentId: instrument.id },
+    update: { host: 'analyzer-simulator', port: 5000 },
+    create: {
+      instrumentId: instrument.id,
+      host: 'analyzer-simulator',
+      port: 5000,
+      encoding: 'ASCII',
+      timeoutMs: 10000,
+      retryLimit: 3,
+      ackEnabled: true,
+    },
+  });
+
+  const testMappings = [
+    { code: 'GLU',   unit: 'mmol/L' },
+    { code: 'CREA',  unit: 'µmol/L' },
+    { code: 'UREE',  unit: 'mmol/L' },
+    { code: 'ALT',   unit: 'U/L'    },
+    { code: 'AST',   unit: 'U/L'    },
+    { code: 'GGT',   unit: 'U/L'    },
+    { code: 'ALP',   unit: 'U/L'    },
+    { code: 'LDH',   unit: 'U/L'    },
+    { code: 'TBIL',  unit: 'µmol/L' },
+    { code: 'DBIL',  unit: 'µmol/L' },
+    { code: 'TP',    unit: 'g/L'    },
+    { code: 'ALB',   unit: 'g/L'    },
+    { code: 'CHOL',  unit: 'mmol/L' },
+    { code: 'TG',    unit: 'mmol/L' },
+    { code: 'HDL',   unit: 'mmol/L' },
+    { code: 'LDL',   unit: 'mmol/L' },
+    { code: 'URIC',  unit: 'µmol/L' },
+    { code: 'CA',    unit: 'mmol/L' },
+    { code: 'PHOS',  unit: 'mmol/L' },
+    { code: 'MG',    unit: 'mmol/L' },
+    { code: 'FER',   unit: 'µmol/L' },
+    { code: 'CRP',   unit: 'mg/L'   },
+    { code: 'HBA1C', unit: '%'      },
+    { code: 'AMY',   unit: 'U/L'    },
+    { code: 'LIPA',  unit: 'U/L'    },
+  ];
+
+  for (const m of testMappings) {
+    const existing = await prisma.instrumentTestMapping.findFirst({
+      where: { instrumentId: instrument.id, internalTestCode: m.code },
+    });
+    if (!existing) {
+      await prisma.instrumentTestMapping.create({
+        data: {
+          instrumentId: instrument.id,
+          internalTestCode: m.code,
+          instrumentTestCode: m.code,
+          sampleType: 'SERUM',
+          unit: m.unit,
+          isActive: true,
+        },
+      });
+    }
+  }
+
+  await prisma.instrumentSimulatorConfig.upsert({
+    where: { instrumentId: instrument.id },
+    update: {},
+    create: {
+      instrumentId: instrument.id,
+      rackCount: 2,
+      slotsPerRack: 20,
+      statSlots: 3,
+      throughputPerHour: 370,
+      processingTimeMinMs: 3000,
+      processingTimeMaxMs: 8000,
+      abnormalRate: 0.12,
+      errorRate: 0.02,
+      calibrationIntervalMs: 1800000,
+    },
+  });
+
+  console.log(`  ✓ cobas c 311 seeded with ${testMappings.length} test mappings`);
+}
+
+async function seedCobasE411() {
+  const instrument = await prisma.instrument.upsert({
+    where: { code: 'COBAS_E411' },
+    update: {
+      name: 'cobas e 411',
+      manufacturer: 'Roche Diagnostics',
+      model: 'cobas e 411',
+      protocolType: InstrumentProtocolType.ASTM,
+      transportType: InstrumentTransportType.TCP,
+      directionMode: InstrumentDirectionMode.BIDIRECTIONAL,
+      isActive: true,
+      location: 'Labo Immunologie',
+    },
+    create: {
+      code: 'COBAS_E411',
+      name: 'cobas e 411',
+      manufacturer: 'Roche Diagnostics',
+      model: 'cobas e 411',
+      protocolType: InstrumentProtocolType.ASTM,
+      transportType: InstrumentTransportType.TCP,
+      directionMode: InstrumentDirectionMode.BIDIRECTIONAL,
+      isActive: true,
+      location: 'Labo Immunologie',
+    },
+  });
+
+  await prisma.instrumentConnection.upsert({
+    where: { instrumentId: instrument.id },
+    update: {
+      host: 'analyzer-simulator',
+      port: 5002,
+    },
+    create: {
+      instrumentId: instrument.id,
+      host: 'analyzer-simulator',
+      port: 5002,
+      encoding: 'ASCII',
+      timeoutMs: 10000,
+      retryLimit: 3,
+      ackEnabled: true,
+    },
+  });
+
+  const cobasTestMappings = [
+    { code: 'TSH',    unit: 'mUI/L'  },
+    { code: 'FT4',    unit: 'pmol/L' },
+    { code: 'FT3',    unit: 'pmol/L' },
+    { code: 'LH',     unit: 'mUI/mL' },
+    { code: 'FSH',    unit: 'mUI/mL' },
+    { code: 'PRL',    unit: 'µg/L'   },
+    { code: 'E2',     unit: 'pmol/L' },
+    { code: 'TESTO',  unit: 'nmol/L' },
+    { code: 'PROG',   unit: 'nmol/L' },
+    { code: 'HCG',    unit: 'mUI/mL' },
+    { code: 'INSU',   unit: 'mUI/L'  },
+    { code: 'CPP',    unit: 'nmol/L' },
+    { code: 'CRT',    unit: 'nmol/L' },
+    { code: 'DHEAS',  unit: 'µmol/L' },
+    { code: 'PTH',    unit: 'pmol/L' },
+    { code: 'VIT_D',  unit: 'nmol/L' },
+    { code: 'B12',    unit: 'pmol/L' },
+    { code: 'FOLAT',  unit: 'nmol/L' },
+    { code: 'FERR',   unit: 'ng/mL'  },
+    { code: 'PSA',    unit: 'µg/L'   },
+    { code: 'AFP',    unit: 'µg/L'   },
+    { code: 'CEA',    unit: 'µg/L'   },
+    { code: 'CA125',  unit: 'kUI/L'  },
+    { code: 'CA199',  unit: 'kUI/L'  },
+    { code: 'TROPP',  unit: 'ng/L'   },
+    { code: 'NT_BNP', unit: 'ng/L'   },
+    { code: 'CRP_HS', unit: 'mg/L'   },
+    { code: 'HBS_AG', unit: ''       },
+    { code: 'AC_HBS', unit: 'mUI/mL' },
+    { code: 'AC_HBC', unit: ''       },
+    { code: 'AC_VIH', unit: ''       },
+    { code: 'AC_VHC', unit: ''       },
+  ];
+
+  for (const m of cobasTestMappings) {
+    const existing = await prisma.instrumentTestMapping.findFirst({
+      where: { instrumentId: instrument.id, internalTestCode: m.code },
+    });
+    if (!existing) {
+      await prisma.instrumentTestMapping.create({
+        data: {
+          instrumentId: instrument.id,
+          internalTestCode: m.code,
+          instrumentTestCode: m.code,
+          sampleType: 'SERUM',
+          unit: m.unit,
+          isActive: true,
+        },
+      });
+    }
+  }
+
+  await prisma.instrumentSimulatorConfig.upsert({
+    where: { instrumentId: instrument.id },
+    update: {},
+    create: {
+      instrumentId: instrument.id,
+      rackCount: 2,
+      slotsPerRack: 20,
+      statSlots: 3,
+      throughputPerHour: 200,
+      processingTimeMinMs: 5000,
+      processingTimeMaxMs: 18000,
+      abnormalRate: 0.15,
+      errorRate: 0.02,
+      calibrationIntervalMs: 3600000,
+    },
+  });
+
+  console.log(`  ✓ Cobas e 411 seeded with ${cobasTestMappings.length} test mappings`);
+}
+
 // ─── Main ─────────────────────────────────────────────────────────────────────
 
 async function main() {
@@ -479,9 +983,20 @@ async function main() {
   await clearDatabase();
   await seedUsers();
   await seedTestDefinitions();
+  await seedReferenceValues();
   await seedStorageLocations();
   await seedReagents();
   await seedPatients();
+  await seedPractitioners();
+  await seedQCMaterials();
+  await seedQCSchedules();
+  await seedQCResults();
+  await seedPricingTiers();
+  await seedSamples();
+  await seedSampleInventoryLines();
+  await seedInstrumentCatalog();
+  await seedCobasC311();
+  await seedCobasE411();
 
   console.log('\n✅ Seed complete.');
   console.log('\nDefault credentials:');

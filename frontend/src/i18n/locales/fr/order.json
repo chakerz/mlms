@@ -18,7 +18,8 @@
     "prescriptorType": "Type de prescripteur",
     "frequentlyUsed": "Utilisées fréquemment",
     "allCategories": "Toutes",
-    "loading": "Chargement du catalogue..."
+    "loading": "Chargement du catalogue...",
+    "selectInstrument": "Sélectionner un analyseur"
   },
   "priority": { "ROUTINE": "Routine", "URGENT": "Urgent", "STAT": "Stat" },
   "prescriptorType": {
@@ -28,12 +29,16 @@
     "EXTERNE": "Externe",
     "AUTRE": "Autre"
   },
-  "actions": { "create": "Créer la demande", "cancel": "Annuler la demande" },
+  "actions": { "create": "Créer la demande", "cancel": "Annuler la demande", "sendToAnalyzer": "Envoyer à l'analyseur", "send": "Envoyer" },
   "messages": {
     "created": "Demande créée avec succès",
     "createError": "Erreur lors de la création",
     "notFound": "Commande introuvable",
-    "cancelConfirm": "Êtes-vous sûr de vouloir annuler cette demande ?"
+    "cancelConfirm": "Êtes-vous sûr de vouloir annuler cette demande ?",
+    "sentToAnalyzer": "Demande envoyée à l'analyseur",
+    "results": "résultat(s)",
+    "sendFailed": "Erreur lors de l'envoi à l'analyseur",
+    "selectAnalyzer": "Sélectionnez l'analyseur cible pour envoyer la liste de travail ASTM."
   },
   "validation": {
     "patientRequired": "L'identifiant du patient est requis",

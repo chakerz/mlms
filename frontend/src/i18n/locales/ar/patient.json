@@ -14,6 +14,12 @@
     "phone": "الهاتف",
     "email": "البريد الإلكتروني",
     "address": "العنوان",
+    "bloodType": "فصيلة الدم",
+    "allergies": "الحساسية",
+    "emergencyContactName": "جهة اتصال الطوارئ – الاسم",
+    "emergencyContactPhone": "جهة اتصال الطوارئ – الهاتف",
+    "healthInsuranceNumber": "رقم التأمين الصحي",
+    "pricingTierId": "مستوى التسعير",
     "createdAt": "تاريخ التسجيل"
   },
   "gender": {

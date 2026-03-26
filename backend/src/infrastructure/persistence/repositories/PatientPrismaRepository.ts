@@ -27,6 +27,12 @@ export class PatientPrismaRepository implements IPatientRepository {
       phone: patient.phone,
       email: patient.email,
       address: patient.address,
+      bloodType: patient.bloodType,
+      allergies: patient.allergies,
+      emergencyContactName: patient.emergencyContactName,
+      emergencyContactPhone: patient.emergencyContactPhone,
+      healthInsuranceNumber: patient.healthInsuranceNumber,
+      pricingTierId: patient.pricingTierId,
     };
     const row = patient.id
       ? await this.prisma.patient.update({ where: { id: patient.id }, data })
@@ -83,6 +89,12 @@ export class PatientPrismaRepository implements IPatientRepository {
     address: string | null;
     createdAt: Date;
     updatedAt: Date;
+    bloodType?: string | null;
+    allergies?: string | null;
+    emergencyContactName?: string | null;
+    emergencyContactPhone?: string | null;
+    healthInsuranceNumber?: string | null;
+    pricingTierId?: string | null;
   }): Patient {
     return new Patient(
       row.id,
@@ -95,6 +107,12 @@ export class PatientPrismaRepository implements IPatientRepository {
       row.address,
       row.createdAt,
       row.updatedAt,
+      row.bloodType ?? null,
+      row.allergies ?? null,
+      row.emergencyContactName ?? null,
+      row.emergencyContactPhone ?? null,
+      row.healthInsuranceNumber ?? null,
+      row.pricingTierId ?? null,
     );
   }
 }

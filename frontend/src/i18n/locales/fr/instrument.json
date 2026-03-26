@@ -1,0 +1,119 @@
+{
+  "titleList": "Instruments d'analyse",
+  "titleDetail": "Détail instrument",
+  "titleCreate": "Nouvel instrument",
+  "titleEdit": "Modifier instrument",
+  "code": "Code",
+  "name": "Nom",
+  "manufacturer": "Fabricant",
+  "model": "Modèle",
+  "protocolType": "Protocole",
+  "transportType": "Transport",
+  "directionMode": "Mode",
+  "location": "Localisation",
+  "isActive": "Actif",
+  "tabs": {
+    "info": "Informations",
+    "connection": "Connexion",
+    "mappings": "Mappings tests"
+  },
+  "connection": {
+    "title": "Configuration connexion",
+    "host": "Hôte / IP",
+    "port": "Port TCP",
+    "serialPort": "Port série",
+    "baudRate": "Baudrate",
+    "parity": "Parité",
+    "dataBits": "Bits données",
+    "stopBits": "Bits stop",
+    "fileImportPath": "Chemin import",
+    "fileExportPath": "Chemin export",
+    "ackEnabled": "ACK activé",
+    "encoding": "Encodage",
+    "timeoutMs": "Timeout (ms)",
+    "retryLimit": "Nb retries max"
+  },
+  "mapping": {
+    "title": "Mapping codes tests",
+    "internalCode": "Code interne",
+    "instrumentCode": "Code instrument",
+    "sampleType": "Type échantillon",
+    "specimenCode": "Code spécimen",
+    "unit": "Unité",
+    "addMapping": "Ajouter mapping"
+  },
+  "outbox": {
+    "title": "Messages sortants",
+    "specimenId": "Spécimen",
+    "orderId": "Demande",
+    "status": "Statut",
+    "retryCount": "Retries",
+    "sentAt": "Envoyé",
+    "errorMessage": "Erreur",
+    "retry": "Réessayer",
+    "cancel": "Annuler"
+  },
+  "inbox": {
+    "title": "Messages entrants",
+    "rawPayload": "Payload brut",
+    "barcode": "Code-barres",
+    "sampleId": "ID Échantillon",
+    "matchingStatus": "Matching",
+    "importStatus": "Import",
+    "receivedAt": "Reçu",
+    "errorMessage": "Erreur",
+    "reprocess": "Retraiter"
+  },
+  "rawResults": {
+    "title": "Résultats bruts",
+    "instrumentTestCode": "Code instrument",
+    "internalTestCode": "Code interne",
+    "resultValue": "Valeur",
+    "unit": "Unité",
+    "flagCode": "Flag",
+    "resultStatus": "Statut",
+    "measuredAt": "Mesuré"
+  },
+  "status": {
+    "PENDING": "En attente",
+    "READY_TO_SEND": "Prêt à envoyer",
+    "SENT": "Envoyé",
+    "ACK_RECEIVED": "ACK reçu",
+    "FAILED": "Échec",
+    "RETRY_SCHEDULED": "Retry planifié",
+    "CANCELLED": "Annulé",
+    "RECEIVED": "Reçu",
+    "PARSED": "Parsé",
+    "MATCHED": "Matché",
+    "IMPORTED": "Importé",
+    "PARTIALLY_IMPORTED": "Part. importé",
+    "ERROR": "Erreur",
+    "IGNORED": "Ignoré",
+    "UNMATCHED": "Non matché",
+    "MATCHED_BY_SAMPLE_ID": "Par ID",
+    "MATCHED_BY_BARCODE": "Par code-barres",
+    "MATCHED_BY_FALLBACK_RULE": "Fallback",
+    "AMBIGUOUS": "Ambigu",
+    "RAW_RECEIVED": "Brut reçu",
+    "MAPPED": "Mappé",
+    "PENDING_REVIEW": "En révision",
+    "ACCEPTED_TECHNICALLY": "Accepté tech.",
+    "REJECTED_TECHNICALLY": "Rejeté tech.",
+    "FOR_VALIDATION": "À valider",
+    "VALIDATED": "Validé"
+  },
+  "protocol": {
+    "ASTM": "ASTM",
+    "HL7": "HL7",
+    "PROPRIETARY": "Propriétaire"
+  },
+  "transport": {
+    "TCP": "TCP",
+    "SERIAL": "Série",
+    "FILE_SYSTEM": "Système de fichiers"
+  },
+  "direction": {
+    "UNIDIRECTIONAL": "Unidirectionnel",
+    "BIDIRECTIONAL": "Bidirectionnel"
+  }
+}

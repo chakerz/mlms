@@ -40,6 +40,26 @@ import { TestDefinitionCreatePage } from '@/features/test-definition/pages/TestD
 import { TestDefinitionEditPage } from '@/features/test-definition/pages/TestDefinitionEditPage'
 import { NonConformiteListPage } from '@/features/non-conformite/pages/NonConformiteListPage'
 import { NonConformiteCreatePage } from '@/features/non-conformite/pages/NonConformiteCreatePage'
+import { PractitionerListPage } from '@/features/practitioner/pages/PractitionerListPage'
+import { PractitionerCreatePage } from '@/features/practitioner/pages/PractitionerCreatePage'
+import { PractitionerEditPage } from '@/features/practitioner/pages/PractitionerEditPage'
+import { InvoiceListPage } from '@/features/invoice/pages/InvoiceListPage'
+import { InvoiceDetailPage } from '@/features/invoice/pages/InvoiceDetailPage'
+import { PaymentListPage } from '@/features/payment/pages/PaymentListPage'
+import { PaymentCreatePage } from '@/features/payment/pages/PaymentCreatePage'
+import { QCMaterialListPage } from '@/features/qc/pages/QCMaterialListPage'
+import { QCScheduleListPage } from '@/features/qc/pages/QCScheduleListPage'
+import { QCResultListPage } from '@/features/qc/pages/QCResultListPage'
+import { PricingTierListPage } from '@/features/pricing/pages/PricingTierListPage'
+import { PricingTierFormPage } from '@/features/pricing/pages/PricingTierFormPage'
+import { SampleListPage } from '@/features/sample/pages/SampleListPage'
+import { SampleInventoryListPage } from '@/features/sample/pages/SampleInventoryListPage'
+import { InstrumentListPage } from '@/features/instrument/pages/InstrumentListPage'
+import { InstrumentFormPage } from '@/features/instrument/pages/InstrumentFormPage'
+import { InstrumentDetailPage } from '@/features/instrument/pages/InstrumentDetailPage'
+import { InstrumentOutboxPage } from '@/features/instrument/pages/InstrumentOutboxPage'
+import { InstrumentInboxPage } from '@/features/instrument/pages/InstrumentInboxPage'
+import { InstrumentRawResultsPage } from '@/features/instrument/pages/InstrumentRawResultsPage'
 import { UserRole } from '@/shared/types/app.types'
 
 export function AppRoutes() {
@@ -143,6 +163,41 @@ export function AppRoutes() {
               <Route path="/reagents/new" element={<ReagentCreatePage />} />
               <Route path="/reagents/:id/lots" element={<ReagentLotPage />} />
               <Route path="/inventory" element={<InventoryDashboardPage />} />
+            </Route>
+
+            <Route
+              element={
+                <ProtectedRoute roles={[UserRole.ADMIN, UserRole.RECEPTION]} />
+              }
+            >
+              <Route path="/practitioners" element={<PractitionerListPage />} />
+              <Route path="/practitioners/new" element={<PractitionerCreatePage />} />
+              <Route path="/practitioners/:id/edit" element={<PractitionerEditPage />} />
+              <Route path="/invoices" element={<InvoiceListPage />} />
+              <Route path="/invoices/:id" element={<InvoiceDetailPage />} />
+              <Route path="/payments" element={<PaymentListPage />} />
+              <Route path="/payments/new" element={<PaymentCreatePage />} />
+              <Route path="/pricing-tiers" element={<PricingTierListPage />} />
+              <Route path="/pricing-tiers/new" element={<PricingTierFormPage />} />
+              <Route path="/pricing-tiers/:id/edit" element={<PricingTierFormPage />} />
+            </Route>
+
+            <Route element={<ProtectedRoute roles={[UserRole.ADMIN, UserRole.TECHNICIAN, UserRole.BIOLOGISTE, UserRole.RECEPTION]} />}>
+              <Route path="/qc/materials" element={<QCMaterialListPage />} />
+              <Route path="/qc/schedules" element={<QCScheduleListPage />} />
+              <Route path="/qc/results" element={<QCResultListPage />} />
+              <Route path="/samples" element={<SampleListPage />} />
+              <Route path="/sample-inventory" element={<SampleInventoryListPage />} />
+            </Route>
+
+            <Route element={<ProtectedRoute roles={[UserRole.ADMIN, UserRole.TECHNICIAN]} />}>
+              <Route path="/instruments" element={<InstrumentListPage />} />
+              <Route path="/instruments/new" element={<InstrumentFormPage />} />
+              <Route path="/instruments/outbox" element={<InstrumentOutboxPage />} />
+              <Route path="/instruments/inbox" element={<InstrumentInboxPage />} />
+              <Route path="/instruments/raw-results" element={<InstrumentRawResultsPage />} />
+              <Route path="/instruments/:id" element={<InstrumentDetailPage />} />
+              <Route path="/instruments/:id/edit" element={<InstrumentFormPage />} />
             </Route>
           </Route>
         </Route>

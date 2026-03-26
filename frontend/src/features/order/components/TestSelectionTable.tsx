@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Plus, Trash2 } from 'lucide-react'
 import { Input } from '@/shared/ui/Input'
@@ -31,11 +31,24 @@ export function TestSelectionTable({ selected, onChange }: TestSelectionTablePro
   const { t: tTd } = useTranslation('testDefinition')
   const [search, setSearch] = useState('')
   const [activeCategory, setActiveCategory] = useState<string | null>(null)
+  const [debouncedSearch, setDebouncedSearch] = useState('')
+  const debounceTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
+
+  const handleSearchChange = (value: string) => {
+    setSearch(value)
+    if (debounceTimer.current) clearTimeout(debounceTimer.current)
+    debounceTimer.current = setTimeout(() => setDebouncedSearch(value), 300)
+  }
 
   const { data, isLoading } = useGetTestDefinitionsQuery({
-    pageSize: 300,
+    pageSize: 2000,
     activeOnly: true,
+    search: debouncedSearch || undefined,
+    category: activeCategory || undefined,
   })
+
+  // Separate unfiltered query to always know which categories exist
+  const { data: allData } = useGetTestDefinitionsQuery({ pageSize: 2000, activeOnly: true })
 
   const allTests = data?.data ?? []
   const isAr = i18n.language === 'ar'
@@ -46,24 +59,15 @@ export function TestSelectionTable({ selected, onChange }: TestSelectionTablePro
   const selectedCodes = new Set(selected.map((s) => s.testCode))
 
   const frequentTests = FREQUENT_CODES
-    .map((code) => allTests.find((td) => td.code === code))
+    .map((code) => (allData?.data ?? allTests).find((td) => td.code === code))
     .filter((td): td is NonNullable<typeof td> => !!td && !selectedCodes.has(td.code))
 
   const presentCategories = CATEGORY_ORDER.filter((c) =>
-    allTests.some((td) => td.category === c),
+    (allData?.data ?? allTests).some((td) => td.category === c),
   )
 
   const filtered = allTests.filter((test) => {
     if (selectedCodes.has(test.code)) return false
-    if (activeCategory && test.category !== activeCategory) return false
-    if (search) {
-      const q = search.toLowerCase()
-      return (
-        test.code.toLowerCase().includes(q) ||
-        test.nameFr.toLowerCase().includes(q) ||
-        test.nameAr.includes(search)
-      )
-    }
     return true
   })
 
@@ -160,7 +164,7 @@ export function TestSelectionTable({ selected, onChange }: TestSelectionTablePro
       <Input
         placeholder={t('form.searchTest')}
         value={search}
-        onChange={(e) => setSearch(e.target.value)}
+        onChange={(e) => handleSearchChange(e.target.value)}
       />
       </div>
 

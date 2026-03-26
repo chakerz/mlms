@@ -74,9 +74,51 @@ export const NAV_ROUTES: RouteConfig[] = [
     roles: [UserRole.ADMIN, UserRole.TECHNICIAN, UserRole.BIOLOGISTE, UserRole.RECEPTION],
   },
   {
+    path: '/practitioners',
+    labelKey: 'navigation.practitioners',
+    icon: 'Stethoscope',
+    roles: [UserRole.ADMIN, UserRole.RECEPTION],
+  },
+  {
+    path: '/invoices',
+    labelKey: 'navigation.invoices',
+    icon: 'Receipt',
+    roles: [UserRole.ADMIN, UserRole.RECEPTION],
+  },
+  {
+    path: '/payments',
+    labelKey: 'navigation.payments',
+    icon: 'CreditCard',
+    roles: [UserRole.ADMIN, UserRole.RECEPTION],
+  },
+  {
     path: '/users',
     labelKey: 'navigation.users',
     icon: 'UserCog',
     roles: [UserRole.ADMIN],
+  },
+  {
+    path: '/instruments',
+    labelKey: 'navigation.instruments',
+    icon: 'Cpu',
+    roles: [UserRole.ADMIN, UserRole.TECHNICIAN],
+  },
+  {
+    path: '/instruments/outbox',
+    labelKey: 'navigation.instrumentOutbox',
+    icon: 'Send',
+    roles: [UserRole.ADMIN, UserRole.TECHNICIAN],
+  },
+  {
+    path: '/instruments/inbox',
+    labelKey: 'navigation.instrumentInbox',
+    icon: 'Inbox',
+    roles: [UserRole.ADMIN, UserRole.TECHNICIAN],
+  },
+  {
+    path: '/instruments/raw-results',
+    labelKey: 'navigation.instrumentRawResults',
+    icon: 'Database',
+    roles: [UserRole.ADMIN, UserRole.TECHNICIAN],
   },
 ]

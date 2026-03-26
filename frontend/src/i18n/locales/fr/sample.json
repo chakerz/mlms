@@ -1,0 +1,24 @@
+{
+  "titleList": "Catalogue des échantillons",
+  "code": "Code",
+  "type": "Type",
+  "container": "Contenant",
+  "storage": "Conditions de conservation",
+  "inventory": {
+    "title": "Inventaire des échantillons",
+    "barcode": "Code-barres",
+    "inventoryCode": "Code inventaire",
+    "location": "Localisation",
+    "quantity": "Quantité",
+    "qcPending": "QC en attente",
+    "expirationDate": "Expiration",
+    "receptionDate": "Réception",
+    "status": {
+      "RECEIVED": "Reçu",
+      "IN_STORAGE": "En stock",
+      "IN_USE": "En cours",
+      "DISPOSED": "Éliminé",
+      "EXPIRED": "Expiré"
+    }
+  }
+}

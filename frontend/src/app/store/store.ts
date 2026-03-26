@@ -11,6 +11,13 @@ import { portalApi } from '@/features/portal/api/portalApi'
 import { userApi } from '@/features/user/api/userApi'
 import { testDefinitionApi } from '@/features/test-definition/api/testDefinitionApi'
 import { nonConformiteApi } from '@/features/non-conformite/api/nonConformiteApi'
+import { practitionerApi } from '@/features/practitioner/api/practitionerApi'
+import { invoiceApi } from '@/features/invoice/api/invoiceApi'
+import { paymentApi } from '@/features/payment/api/paymentApi'
+import { qcApi } from '@/features/qc/api/qcApi'
+import { pricingApi } from '@/features/pricing/api/pricingApi'
+import { sampleApi } from '@/features/sample/api/sampleApi'
+import { instrumentApi } from '@/features/instrument/api/instrumentApi'
 
 export const store = configureStore({
   reducer: {
@@ -26,6 +33,13 @@ export const store = configureStore({
     [userApi.reducerPath]: userApi.reducer,
     [testDefinitionApi.reducerPath]: testDefinitionApi.reducer,
     [nonConformiteApi.reducerPath]: nonConformiteApi.reducer,
+    [practitionerApi.reducerPath]: practitionerApi.reducer,
+    [invoiceApi.reducerPath]: invoiceApi.reducer,
+    [paymentApi.reducerPath]: paymentApi.reducer,
+    [qcApi.reducerPath]: qcApi.reducer,
+    [pricingApi.reducerPath]: pricingApi.reducer,
+    [sampleApi.reducerPath]: sampleApi.reducer,
+    [instrumentApi.reducerPath]: instrumentApi.reducer,
   },
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware().concat(
@@ -40,6 +54,13 @@ export const store = configureStore({
       userApi.middleware,
       testDefinitionApi.middleware,
       nonConformiteApi.middleware,
+      practitionerApi.middleware,
+      invoiceApi.middleware,
+      paymentApi.middleware,
+      qcApi.middleware,
+      pricingApi.middleware,
+      sampleApi.middleware,
+      instrumentApi.middleware,
     ),
 })
 

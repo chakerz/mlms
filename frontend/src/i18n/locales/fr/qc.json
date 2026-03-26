@@ -1,0 +1,38 @@
+{
+  "material": {
+    "title": "Matériaux de contrôle",
+    "barcode": "Code-barres",
+    "name": "Nom",
+    "lotNumber": "N° lot",
+    "manufacturer": "Fabricant",
+    "expectedValue": "Valeur attendue (± SD)",
+    "expirationDate": "Date d'expiration"
+  },
+  "schedule": {
+    "title": "Plannings QC",
+    "barcode": "Code-barres",
+    "ruleName": "Règle QC",
+    "scheduledDate": "Date planifiée",
+    "duration": "Durée",
+    "status": {
+      "PENDING": "En attente",
+      "IN_PROGRESS": "En cours",
+      "COMPLETED": "Terminé",
+      "CANCELLED": "Annulé"
+    }
+  },
+  "result": {
+    "title": "Résultats QC",
+    "testName": "Analyse",
+    "resultValue": "Valeur",
+    "alert": "Alerte",
+    "acceptableLimits": "Limites acceptables",
+    "performedDate": "Date",
+    "performedBy": "Réalisé par",
+    "status": {
+      "PENDING": "En attente",
+      "ACCEPTED": "Accepté",
+      "REJECTED": "Rejeté"
+    }
+  }
+}

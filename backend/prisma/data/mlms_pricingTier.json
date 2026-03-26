@@ -1,0 +1,47 @@
+{
+    "currentPage": 1,
+    "totalPages": 1,
+    "totalCount": 3,
+    "items": [
+        {
+            "id": "adcb6ed8-4ce6-4105-aa73-7d89d7416d3f",
+            "name": "Remise 30%",
+            "description": "",
+            "isActive": true,
+            "defaultRate": -30,
+            "notes": "",
+            "testPricingRuleIds": [],
+            "payerIds": [],
+            "patientIds": [],
+            "createdAt": "2026-03-07T21:18:20.393556Z",
+            "updatedAt": "2026-03-07T21:18:20.393556Z"
+        },
+        {
+            "id": "5f643f3a-d982-41c1-9e09-e95ab1016576",
+            "name": "Remise 20%",
+            "description": "",
+            "isActive": true,
+            "defaultRate": -20,
+            "notes": "",
+            "testPricingRuleIds": [],
+            "payerIds": [],
+            "patientIds": [],
+            "createdAt": "2026-02-15T12:14:41.878858Z",
+            "updatedAt": "2026-02-15T12:15:53.177483Z"
+        },
+        {
+            "id": "328b726c-e389-41a8-ab12-c0f2b2b317df",
+            "name": "Standard 0%",
+            "description": "",
+            "isActive": true,
+            "defaultRate": 0,
+            "notes": "",
+            "testPricingRuleIds": [],
+            "payerIds": [],
+            "patientIds": [],
+            "createdAt": "2026-02-01T14:31:35.061434Z",
+            "updatedAt": "2026-02-01T14:31:35.061434Z"
+        }
+    ],
+    "statistics": null
+}

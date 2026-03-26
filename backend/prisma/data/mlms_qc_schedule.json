@@ -1,0 +1,32 @@
+{
+    "currentPage": 1,
+    "totalPages": 1,
+    "totalCount": 2,
+    "items": [
+        {
+            "id": "019c6137-74ed-79bf-8d80-0dd3d85e1dff",
+            "barcode": "1201157480152643",
+            "qcRuleId": "019c6137-73b6-761b-a8ab-578ef379c843",
+            "qcRuleName": "Controle Reactif A",
+            "scheduledDate": "2026-02-23T09:00:00Z",
+            "duration": 60,
+            "qcScheduleStatus": "Pending",
+            "qcResultId": "019c6137-74f3-783b-9b0d-084c88ca44e9",
+            "createdAt": "2026-02-15T12:12:30.316561Z",
+            "updatedAt": "2026-02-15T12:12:30.316561Z"
+        },
+        {
+            "id": "019c6137-743e-7184-90f2-8e2d9f2aa310",
+            "barcode": "1201157480152643",
+            "qcRuleId": "019c6137-73b6-761b-a8ab-578ef379c843",
+            "qcRuleName": "Controle Reactif A",
+            "scheduledDate": "2026-02-16T09:00:00Z",
+            "duration": 60,
+            "qcScheduleStatus": "Pending",
+            "qcResultId": "019c6137-749c-79f4-a33d-969a57db954e",
+            "createdAt": "2026-02-15T12:12:30.138233Z",
+            "updatedAt": "2026-02-15T12:12:30.138233Z"
+        }
+    ],
+    "statistics": null
+}

@@ -9,6 +9,12 @@ export class PatientDto {
   phone: string | null;
   email: string | null;
   address: string | null;
+  bloodType: string | null;
+  allergies: string | null;
+  emergencyContactName: string | null;
+  emergencyContactPhone: string | null;
+  healthInsuranceNumber: string | null;
+  pricingTierId: string | null;
   createdAt: string;
   updatedAt: string;
 }

@@ -1,0 +1,40 @@
+{
+  "title": {
+    "list": "المدفوعات",
+    "create": "تسجيل دفعة",
+    "detail": "تفاصيل الدفعة"
+  },
+  "form": {
+    "referenceNumber": "رقم المرجع",
+    "invoiceId": "رقم الفاتورة",
+    "patientName": "اسم المريض",
+    "paymentDate": "تاريخ الدفع",
+    "totalAmount": "المبلغ الإجمالي",
+    "amountPaid": "المبلغ المدفوع",
+    "paymentMethod": "طريقة الدفع",
+    "notes": "ملاحظات",
+    "status": "الحالة"
+  },
+  "status": {
+    "PENDING": "في الانتظار",
+    "COMPLETED": "مكتمل",
+    "FAILED": "فاشل",
+    "REFUNDED": "مسترجع"
+  },
+  "method": {
+    "CASH": "نقدي",
+    "CARD": "بطاقة بنكية",
+    "CHECK": "شيك",
+    "BANK_TRANSFER": "تحويل بنكي",
+    "INSURANCE": "تأمين"
+  },
+  "actions": {
+    "create": "تسجيل دفعة",
+    "updateStatus": "تغيير الحالة"
+  },
+  "messages": {
+    "notFound": "الدفعة غير موجودة",
+    "createError": "خطأ أثناء تسجيل الدفعة",
+    "updateError": "خطأ أثناء تحديث الدفعة"
+  }
+}

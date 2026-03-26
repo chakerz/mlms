@@ -1,0 +1,52 @@
+{
+  "title": {
+    "list": "الفواتير",
+    "create": "إنشاء فاتورة",
+    "detail": "تفاصيل الفاتورة"
+  },
+  "form": {
+    "invoiceNumber": "رقم الفاتورة",
+    "customerName": "اسم العميل",
+    "customerAddress": "عنوان العميل",
+    "customerEmail": "البريد الإلكتروني للعميل",
+    "customerPhone": "هاتف العميل",
+    "invoiceDate": "تاريخ الفاتورة",
+    "dueDate": "تاريخ الاستحقاق",
+    "paymentTerms": "شروط الدفع",
+    "subtotal": "المجموع الفرعي",
+    "totalDiscount": "إجمالي الخصم",
+    "totalTax": "إجمالي الضريبة",
+    "total": "المجموع الكلي",
+    "amountPaid": "المبلغ المدفوع",
+    "balanceDue": "الرصيد المستحق",
+    "billingCodes": "رموز الفوترة",
+    "comments": "ملاحظات"
+  },
+  "status": {
+    "DRAFT": "مسودة",
+    "PENDING": "في الانتظار",
+    "PAID": "مدفوعة",
+    "OVERDUE": "متأخرة",
+    "CANCELLED": "ملغاة"
+  },
+  "lines": {
+    "title": "بنود الفاتورة",
+    "description": "الوصف",
+    "quantity": "الكمية",
+    "unitPrice": "سعر الوحدة",
+    "taxRate": "نسبة الضريبة",
+    "lineTotal": "إجمالي البند"
+  },
+  "payments": {
+    "title": "المدفوعات المرتبطة"
+  },
+  "actions": {
+    "create": "إنشاء فاتورة",
+    "updateStatus": "تغيير الحالة"
+  },
+  "messages": {
+    "notFound": "الفاتورة غير موجودة",
+    "createError": "خطأ أثناء إنشاء الفاتورة",
+    "updateError": "خطأ أثناء تحديث الفاتورة"
+  }
+}

@@ -17,6 +17,13 @@ import frStatuses from './locales/fr/statuses.json'
 import frMedical from './locales/fr/medical.json'
 import frTestDefinition from './locales/fr/testDefinition.json'
 import frNonConformite from './locales/fr/nonConformite.json'
+import frPractitioner from './locales/fr/practitioner.json'
+import frInvoice from './locales/fr/invoice.json'
+import frPayment from './locales/fr/payment.json'
+import frQc from './locales/fr/qc.json'
+import frPricing from './locales/fr/pricing.json'
+import frSample from './locales/fr/sample.json'
+import frInstrument from './locales/fr/instrument.json'
 
 import arCommon from './locales/ar/common.json'
 import arAuth from './locales/ar/auth.json'
@@ -34,6 +41,13 @@ import arStatuses from './locales/ar/statuses.json'
 import arMedical from './locales/ar/medical.json'
 import arTestDefinition from './locales/ar/testDefinition.json'
 import arNonConformite from './locales/ar/nonConformite.json'
+import arPractitioner from './locales/ar/practitioner.json'
+import arInvoice from './locales/ar/invoice.json'
+import arPayment from './locales/ar/payment.json'
+import arQc from './locales/ar/qc.json'
+import arPricing from './locales/ar/pricing.json'
+import arSample from './locales/ar/sample.json'
+import arInstrument from './locales/ar/instrument.json'
 
 void i18n.use(initReactI18next).init({
   resources: {
@@ -42,14 +56,20 @@ void i18n.use(initReactI18next).init({
       order: frOrder, specimen: frSpecimen, result: frResult, report: frReport,
       reagent: frReagent, portal: frPortal, users: frUsers, validation: frValidation,
       statuses: frStatuses, medical: frMedical, testDefinition: frTestDefinition,
-      nonConformite: frNonConformite,
+      nonConformite: frNonConformite, practitioner: frPractitioner,
+      invoice: frInvoice, payment: frPayment,
+      qc: frQc, pricing: frPricing, sample: frSample,
+      instrument: frInstrument,
     },
     ar: {
       common: arCommon, auth: arAuth, dashboard: arDashboard, patient: arPatient,
       order: arOrder, specimen: arSpecimen, result: arResult, report: arReport,
       reagent: arReagent, portal: arPortal, users: arUsers, validation: arValidation,
       statuses: arStatuses, medical: arMedical, testDefinition: arTestDefinition,
-      nonConformite: arNonConformite,
+      nonConformite: arNonConformite, practitioner: arPractitioner,
+      invoice: arInvoice, payment: arPayment,
+      qc: arQc, pricing: arPricing, sample: arSample,
+      instrument: arInstrument,
     },
   },
   lng: 'fr',
@@ -57,7 +77,7 @@ void i18n.use(initReactI18next).init({
   defaultNS: 'common',
   ns: ['common', 'auth', 'dashboard', 'patient', 'order', 'specimen', 'result',
        'report', 'reagent', 'portal', 'users', 'validation', 'statuses', 'medical', 'testDefinition',
-       'nonConformite'],
+       'nonConformite', 'practitioner', 'invoice', 'payment', 'qc', 'pricing', 'sample', 'instrument'],
   interpolation: { escapeValue: false },
 })
 

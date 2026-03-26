@@ -41,9 +41,13 @@ export class ReportPrismaRepository implements IReportRepository {
     return rows.map((r) => this.toDomain(r));
   }
 
+  private readonly VALID_STATUSES = new Set(['DRAFT', 'VALIDATED', 'FINAL', 'CORRECTED', 'PUBLISHED']);
+
   async list(query: ListReportsQuery): Promise<{ data: Report[]; total: number }> {
     const where: Record<string, unknown> = {};
-    if (query.status) where['status'] = query.status as unknown as import('@prisma/client').ReportStatus;
+    if (query.status && this.VALID_STATUSES.has(query.status)) {
+      where['status'] = query.status as unknown as import('@prisma/client').ReportStatus;
+    }
     if (query.orderId) where['orderId'] = query.orderId;
 
     const [rows, total] = await Promise.all([

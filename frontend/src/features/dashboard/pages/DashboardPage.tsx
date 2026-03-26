@@ -160,7 +160,7 @@ export function DashboardPage() {
 
   const { data: patientsData } = useGetPatientsQuery({ page: 1, pageSize: 1 })
   const { data: ordersData } = useGetOrdersQuery({ page: 1, pageSize: 1 })
-  const { data: reportsData } = useGetReportsQuery({ page: 1, status: 'PENDING' })
+  const { data: reportsData } = useGetReportsQuery({ page: 1, status: 'DRAFT' })
 
   const stats: StatCardProps[] = [
     {

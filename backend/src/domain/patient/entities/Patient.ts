@@ -12,5 +12,11 @@ export class Patient {
     public readonly address: string | null,
     public readonly createdAt: Date,
     public readonly updatedAt: Date,
+    public readonly bloodType: string | null = null,
+    public readonly allergies: string | null = null,
+    public readonly emergencyContactName: string | null = null,
+    public readonly emergencyContactPhone: string | null = null,
+    public readonly healthInsuranceNumber: string | null = null,
+    public readonly pricingTierId: string | null = null,
   ) {}
 }

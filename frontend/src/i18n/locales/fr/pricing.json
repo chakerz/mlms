@@ -1,0 +1,11 @@
+{
+  "tier": {
+    "titleList": "Niveaux tarifaires",
+    "titleCreate": "Nouveau niveau tarifaire",
+    "titleEdit": "Modifier le niveau tarifaire",
+    "name": "Nom",
+    "defaultRate": "Taux par défaut (%)",
+    "notes": "Notes",
+    "create": "Nouveau tarif"
+  }
+}

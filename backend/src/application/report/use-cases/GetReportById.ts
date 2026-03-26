@@ -48,6 +48,12 @@ export class GetReportById {
       phone: patient.phone,
       email: patient.email,
       address: patient.address,
+      bloodType: patient.bloodType ?? null,
+      allergies: patient.allergies ?? null,
+      emergencyContactName: patient.emergencyContactName ?? null,
+      emergencyContactPhone: patient.emergencyContactPhone ?? null,
+      healthInsuranceNumber: patient.healthInsuranceNumber ?? null,
+      pricingTierId: patient.pricingTierId ?? null,
       createdAt: patient.createdAt.toISOString(),
       updatedAt: patient.updatedAt.toISOString(),
     };

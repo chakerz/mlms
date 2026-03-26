@@ -1,0 +1,38 @@
+{
+  "material": {
+    "title": "مواد ضبط الجودة",
+    "barcode": "الرمز الشريطي",
+    "name": "الاسم",
+    "lotNumber": "رقم الدفعة",
+    "manufacturer": "الشركة المصنعة",
+    "expectedValue": "القيمة المتوقعة (± SD)",
+    "expirationDate": "تاريخ الانتهاء"
+  },
+  "schedule": {
+    "title": "جداول ضبط الجودة",
+    "barcode": "الرمز الشريطي",
+    "ruleName": "قاعدة المراقبة",
+    "scheduledDate": "التاريخ المحدد",
+    "duration": "المدة",
+    "status": {
+      "PENDING": "قيد الانتظار",
+      "IN_PROGRESS": "جارٍ",
+      "COMPLETED": "مكتمل",
+      "CANCELLED": "ملغى"
+    }
+  },
+  "result": {
+    "title": "نتائج ضبط الجودة",
+    "testName": "التحليل",
+    "resultValue": "القيمة",
+    "alert": "التنبيه",
+    "acceptableLimits": "الحدود المقبولة",
+    "performedDate": "التاريخ",
+    "performedBy": "منفذ بواسطة",
+    "status": {
+      "PENDING": "قيد الانتظار",
+      "ACCEPTED": "مقبول",
+      "REJECTED": "مرفوض"
+    }
+  }
+}

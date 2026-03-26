@@ -18,7 +18,8 @@
     "prescriptorType": "نوع الطبيب",
     "frequentlyUsed": "الأكثر استخداماً",
     "allCategories": "الكل",
-    "loading": "جارٍ تحميل الكتالوج..."
+    "loading": "جارٍ تحميل الكتالوج...",
+    "selectInstrument": "اختر الجهاز التحليلي"
   },
   "priority": { "ROUTINE": "عادي", "URGENT": "مستعجل", "STAT": "فوري" },
   "prescriptorType": {
@@ -28,12 +29,16 @@
     "EXTERNE": "خارجي",
     "AUTRE": "أخرى"
   },
-  "actions": { "create": "إنشاء الطلب", "cancel": "إلغاء الطلب" },
+  "actions": { "create": "إنشاء الطلب", "cancel": "إلغاء الطلب", "sendToAnalyzer": "إرسال إلى الجهاز", "send": "إرسال" },
   "messages": {
     "created": "تم إنشاء الطلب بنجاح",
     "createError": "خطأ أثناء الإنشاء",
     "notFound": "الطلب غير موجود",
-    "cancelConfirm": "هل أنت متأكد من إلغاء هذا الطلب؟"
+    "cancelConfirm": "هل أنت متأكد من إلغاء هذا الطلب؟",
+    "sentToAnalyzer": "تم إرسال الطلب إلى الجهاز",
+    "results": "نتيجة",
+    "sendFailed": "خطأ أثناء الإرسال إلى الجهاز",
+    "selectAnalyzer": "اختر الجهاز التحليلي لإرسال قائمة العمل ASTM."
   },
   "validation": {
     "patientRequired": "معرّف المريض مطلوب",

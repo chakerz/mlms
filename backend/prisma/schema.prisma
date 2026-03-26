@@ -13,6 +13,57 @@ enum Language {
   AR
 }
 
+enum QCScheduleStatus {
+  PENDING
+  IN_PROGRESS
+  COMPLETED
+  CANCELLED
+}
+
+enum QCResultStatus {
+  PENDING
+  ACCEPTED
+  REJECTED
+}
+
+enum QCAlert {
+  GRAY
+  RED
+  YELLOW
+  GREEN
+}
+
+enum SampleInventoryStatus {
+  RECEIVED
+  IN_STORAGE
+  IN_USE
+  DISPOSED
+  EXPIRED
+}
+
+enum InvoiceStatus {
+  DRAFT
+  PENDING
+  PAID
+  OVERDUE
+  CANCELLED
+}
+
+enum PaymentStatus {
+  PENDING
+  COMPLETED
+  FAILED
+  REFUNDED
+}
+
+enum PaymentMethod {
+  CASH
+  CARD
+  CHECK
+  BANK_TRANSFER
+  INSURANCE
+}
+
 enum UserRole {
   RECEPTION
   TECHNICIAN
@@ -139,6 +190,27 @@ enum ConformiteAction {
   REFUSE
 }
 
+model Practitioner {
+  id            String   @id @default(cuid())
+  fullName      String
+  email         String   @unique
+  phoneNumber   String?
+  address       String?
+  speciality    String?
+  qualification String?
+  licenseNumber String?
+  isActive      Boolean  @default(true)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  orders   Order[]
+  invoices Invoice[]
+
+  @@index([email])
+  @@index([isActive])
+  @@index([speciality])
+}
+
 model User {
   id              String       @id @default(cuid())
   email           String       @unique
@@ -161,22 +233,30 @@ model User {
 }
 
 model Patient {
-  id        String   @id @default(cuid())
-  firstName String
-  lastName  String
-  birthDate DateTime @db.Date
-  gender    Gender
-  phone     String?
-  email     String?
-  address   String?
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id                    String   @id @default(cuid())
+  firstName             String
+  lastName              String
+  birthDate             DateTime @db.Date
+  gender                Gender
+  phone                 String?
+  email                 String?
+  address               String?
+  bloodType             String?
+  allergies             String?
+  emergencyContactName  String?
+  emergencyContactPhone String?
+  healthInsuranceNumber String?
+  pricingTierId         String?
+  createdAt             DateTime @default(now())
+  updatedAt             DateTime @updatedAt
 
-  orders    Order[]
+  orders      Order[]
+  pricingTier PricingTier? @relation(fields: [pricingTierId], references: [id], onDelete: SetNull, onUpdate: Cascade)
 
   @@index([lastName])
   @@index([birthDate])
   @@index([email])
+  @@index([pricingTierId])
 }
 
 model Order {
@@ -187,22 +267,26 @@ model Order {
   prescriptorName  String?
   prescriptorType  PrescriptorType?
   createdBy        String?
+  practitionerId   String?
   createdAt        DateTime         @default(now())
   updatedAt        DateTime         @updatedAt
 
-  patient           Patient   @relation(fields: [patientId], references: [id], onDelete: Restrict, onUpdate: Cascade)
-  createdByUser     User?     @relation("OrderCreatedBy", fields: [createdBy], references: [id], onDelete: SetNull, onUpdate: Cascade)
+  patient           Patient       @relation(fields: [patientId], references: [id], onDelete: Restrict, onUpdate: Cascade)
+  createdByUser     User?         @relation("OrderCreatedBy", fields: [createdBy], references: [id], onDelete: SetNull, onUpdate: Cascade)
+  practitioner      Practitioner? @relation(fields: [practitionerId], references: [id], onDelete: SetNull, onUpdate: Cascade)
 
   tests             TestOrder[]
   specimens         Specimen[]
   reports           Report[]
   nonConformites    NonConformite[]
+  invoices          Invoice[]
 
   @@index([patientId])
   @@index([status])
   @@index([priority])
   @@index([createdBy])
   @@index([createdAt])
+  @@index([practitionerId])
 }
 
 model TestOrder {
@@ -374,6 +458,97 @@ model StorageLocation {
   @@index([name])
 }
 
+model Invoice {
+  id               String        @id @default(cuid())
+  invoiceNumber    String        @unique
+  orderId          String?
+  patientId        String?
+  practitionerId   String?
+  customerName     String
+  customerAddress  String?
+  customerEmail    String?
+  customerPhone    String?
+  invoiceDate      DateTime
+  dueDate          DateTime
+  paymentTerms     String?
+  status           InvoiceStatus @default(DRAFT)
+  subtotal         Float         @default(0)
+  totalDiscount    Float         @default(0)
+  totalTax         Float         @default(0)
+  total            Float         @default(0)
+  amountPaid       Float         @default(0)
+  balanceDue       Float         @default(0)
+  billingCodes     String?
+  comments         String?
+  totalInWordsFr   String?
+  totalInWordsEn   String?
+  createdAt        DateTime      @default(now())
+  updatedAt        DateTime      @updatedAt
+
+  lines        InvoiceLine[]
+  payments     Payment[]
+  practitioner Practitioner? @relation(fields: [practitionerId], references: [id], onDelete: SetNull, onUpdate: Cascade)
+  order        Order?        @relation(fields: [orderId], references: [id], onDelete: SetNull, onUpdate: Cascade)
+
+  @@index([status])
+  @@index([invoiceDate])
+  @@index([dueDate])
+  @@index([patientId])
+  @@index([orderId])
+  @@index([practitionerId])
+}
+
+model InvoiceLine {
+  id                 String   @id @default(cuid())
+  invoiceId          String
+  testOrderId        String?
+  itemDescription    String
+  quantity           Int      @default(1)
+  unitPrice          Float    @default(0)
+  totalPrice         Float    @default(0)
+  taxRate            Float    @default(0)
+  taxAmount          Float    @default(0)
+  discountPercentage Float    @default(0)
+  discountAmount     Float    @default(0)
+  subTotal           Float    @default(0)
+  lineTotal          Float    @default(0)
+  billingCode        String?
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+
+  invoice Invoice @relation(fields: [invoiceId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+
+  @@index([invoiceId])
+  @@index([testOrderId])
+}
+
+model Payment {
+  id                   String        @id @default(cuid())
+  referenceNumber      String        @unique
+  invoiceId            String?
+  patientId            String?
+  patientName          String?
+  paymentDate          DateTime
+  totalAmount          Float
+  amountPaid           Float
+  status               PaymentStatus @default(PENDING)
+  paymentMethod        PaymentMethod
+  notes                String?
+  totalAmountInWordsFr String?
+  totalAmountInWordsEn String?
+  amountPaidInWordsFr  String?
+  amountPaidInWordsEn  String?
+  createdAt            DateTime      @default(now())
+  updatedAt            DateTime      @updatedAt
+
+  invoice Invoice? @relation(fields: [invoiceId], references: [id], onDelete: SetNull, onUpdate: Cascade)
+
+  @@index([status])
+  @@index([paymentDate])
+  @@index([patientId])
+  @@index([invoiceId])
+}
+
 model AuditEntry {
   id          String   @id @default(cuid())
   actorUserId String?
@@ -392,6 +567,18 @@ model AuditEntry {
   @@index([createdAt])
 }
 
+model TestPanel {
+  id         String  @id
+  name       String
+  parentName String?
+  order      Int     @default(0)
+
+  tests TestDefinition[]
+
+  @@index([parentName])
+  @@index([name])
+}
+
 model TestDefinition {
   id                    String         @id @default(cuid())
   code                  String         @unique
@@ -399,18 +586,30 @@ model TestDefinition {
   nameAr                String
   category              String
   unit                  String?
+  secondaryUnit         String?
+  referenceRange        Json?
+  secondaryReferenceRange Json?
   referenceLow          Float?
   referenceHigh         Float?
+  criticalLow           String?
+  criticalHigh          String?
   isActive              Boolean        @default(true)
   tubeType              ContainerType?
   minVolumeMl           Float?
   fastingRequired       Boolean        @default(false)
   lightSensitive        Boolean        @default(false)
   maxDelayMinutes       Int?
+  turnaroundTimeMinutes Int?
   storageTemp           String?
   specialNotesFr        String?
   specialNotesAr        String?
   subcontracted         Boolean        @default(false)
+  price                 Float?
+  cost                  Float?
+  loincCode             String?
+  alias                 String?
+  calculationFormula    String?
+  analyticalInstrument  String?
   // Catalogue bilingue
   synonymes             String?
   sampleTypeFr          String?
@@ -424,9 +623,413 @@ model TestDefinition {
   preAnalyticDelayAr    String?
   turnaroundTime        String?
   turnaroundTimeAr      String?
+  // Panel relation
+  panelId               String?
   createdAt             DateTime       @default(now())
   updatedAt             DateTime       @updatedAt
 
+  panel TestPanel? @relation(fields: [panelId], references: [id], onDelete: SetNull, onUpdate: Cascade)
+
   @@index([category])
   @@index([isActive])
+  @@index([panelId])
+}
+
+model QCMaterial {
+  id                String   @id @default(cuid())
+  barcode           String   @unique
+  name              String
+  lotNumber         String
+  manufacturer      String
+  expirationDate    DateTime
+  expectedValue     Float
+  standardDeviation Float
+  isActive          Boolean  @default(true)
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  qcResults QCResult[]
+
+  @@index([isActive])
+  @@index([expirationDate])
+}
+
+model QCSchedule {
+  id            String           @id @default(cuid())
+  barcode       String
+  qcRuleName    String
+  scheduledDate DateTime
+  duration      Int              @default(60)
+  status        QCScheduleStatus @default(PENDING)
+  createdAt     DateTime         @default(now())
+  updatedAt     DateTime         @updatedAt
+
+  qcResults QCResult[]
+
+  @@index([status])
+  @@index([scheduledDate])
+  @@index([barcode])
+}
+
+model QCResult {
+  id                     String         @id @default(cuid())
+  qcScheduleId           String?
+  testId                 String?
+  testName               String
+  controlMaterialId      String?
+  resultValue            String?
+  performedDate          DateTime
+  performedBy            String?
+  status                 QCResultStatus @default(PENDING)
+  acceptableLimitLow     Float          @default(0)
+  acceptableLimitHigh    Float          @default(0)
+  warningLimitLow        Float          @default(0)
+  warningLimitHigh       Float          @default(0)
+  qualitativeObservation String?
+  alert                  QCAlert        @default(GRAY)
+  comments               String?
+  createdAt              DateTime       @default(now())
+  updatedAt              DateTime       @updatedAt
+
+  qcSchedule      QCSchedule? @relation(fields: [qcScheduleId], references: [id], onDelete: SetNull, onUpdate: Cascade)
+  controlMaterial QCMaterial? @relation(fields: [controlMaterialId], references: [id], onDelete: SetNull, onUpdate: Cascade)
+
+  @@index([qcScheduleId])
+  @@index([controlMaterialId])
+  @@index([status])
+  @@index([alert])
+  @@index([testId])
+}
+
+model PricingTier {
+  id          String   @id @default(cuid())
+  name        String
+  description String?
+  isActive    Boolean  @default(true)
+  defaultRate Float    @default(0)
+  notes       String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  patients Patient[]
+
+  @@index([isActive])
+  @@index([name])
+}
+
+model Sample {
+  id                   String   @id @default(cuid())
+  sampleCode           String   @unique
+  name                 String
+  sampleType           String
+  sampleDescription    String?
+  collectionMethod     String?
+  containerType        String?
+  storageConditions    String?
+  handlingInstructions String?
+  sampleStatus         String   @default("Active")
+  qcPassed             Boolean  @default(true)
+  qcNotes              String?
+  createdAt            DateTime @default(now())
+  updatedAt            DateTime @updatedAt
+
+  inventoryLines SampleInventoryLine[]
+
+  @@index([sampleType])
+  @@index([sampleStatus])
+}
+
+model SampleInventoryLine {
+  id                 String                @id @default(cuid())
+  barcode            String
+  inventoryCode      String                @unique
+  sampleId           String?
+  receptionDate      DateTime
+  receivedBy         String?
+  currentLocation    String?
+  currentStatus      SampleInventoryStatus @default(RECEIVED)
+  quantity           Int                   @default(1)
+  unit               String?
+  collectionDate     DateTime?
+  collectionSite     String?
+  collectedBy        String?
+  qcPassed           Boolean               @default(false)
+  qcNotes            String?
+  conservationMethod String?
+  expirationDate     DateTime?
+  history            Json?
+  createdAt          DateTime              @default(now())
+  updatedAt          DateTime              @updatedAt
+
+  sample Sample? @relation(fields: [sampleId], references: [id], onDelete: SetNull, onUpdate: Cascade)
+
+  @@index([barcode])
+  @@index([sampleId])
+  @@index([currentStatus])
+  @@index([expirationDate])
+}
+
+enum InstrumentProtocolType {
+  HL7
+  ASTM
+  PROPRIETARY
+}
+
+enum InstrumentTransportType {
+  TCP
+  SERIAL
+  FILE_SYSTEM
+}
+
+enum InstrumentDirectionMode {
+  UNIDIRECTIONAL
+  BIDIRECTIONAL
+}
+
+enum InstrumentOutboxStatus {
+  PENDING
+  READY_TO_SEND
+  SENT
+  ACK_RECEIVED
+  FAILED
+  RETRY_SCHEDULED
+  CANCELLED
+}
+
+enum InstrumentInboxMatchingStatus {
+  UNMATCHED
+  MATCHED_BY_SAMPLE_ID
+  MATCHED_BY_BARCODE
+  MATCHED_BY_FALLBACK_RULE
+  AMBIGUOUS
+  FAILED
+}
+
+enum InstrumentInboxImportStatus {
+  RECEIVED
+  PARSED
+  MATCHED
+  IMPORTED
+  PARTIALLY_IMPORTED
+  ERROR
+  IGNORED
+}
+
+enum InstrumentRawResultStatus {
+  RAW_RECEIVED
+  MAPPED
+  PENDING_REVIEW
+  ACCEPTED_TECHNICALLY
+  REJECTED_TECHNICALLY
+  FOR_VALIDATION
+  VALIDATED
+}
+
+model InstrumentCatalog {
+  id            String                     @id @default(cuid())
+  code          String                     @unique
+  name          String
+  manufacturer  String
+  model         String
+  category      String?
+  protocolType  InstrumentProtocolType
+  transportType InstrumentTransportType
+  directionMode InstrumentDirectionMode
+  defaultPort   Int?
+  defaultBaudRate Int?
+  notes         String?
+
+  @@index([manufacturer])
+  @@index([category])
+}
+
+model Instrument {
+  id            String                    @id @default(cuid())
+  code          String                    @unique
+  name          String
+  manufacturer  String?
+  model         String?
+  protocolType  InstrumentProtocolType
+  transportType InstrumentTransportType
+  directionMode InstrumentDirectionMode
+  isActive      Boolean                   @default(true)
+  location      String?
+  createdAt     DateTime                  @default(now())
+  updatedAt     DateTime                  @updatedAt
+
+  connection      InstrumentConnection?
+  simulatorConfig InstrumentSimulatorConfig?
+  testMappings    InstrumentTestMapping[]
+  outboxMessages  InstrumentOrderOutbox[]
+  inboxMessages   InstrumentResultInbox[]
+  rawResults      InstrumentRawResult[]
+  auditLog        InstrumentMessageAudit[]
+
+  @@index([isActive])
+  @@index([protocolType])
+}
+
+model InstrumentConnection {
+  id             String   @id @default(cuid())
+  instrumentId   String   @unique
+  host           String?
+  port           Int?
+  serialPort     String?
+  baudRate       Int?
+  parity         String?
+  dataBits       Int?
+  stopBits       Int?
+  fileImportPath String?
+  fileExportPath String?
+  ackEnabled     Boolean  @default(false)
+  encoding       String?
+  timeoutMs      Int?
+  retryLimit     Int      @default(3)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  instrument Instrument @relation(fields: [instrumentId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+
+  @@index([instrumentId])
+}
+
+model InstrumentSimulatorConfig {
+  id                    String     @id @default(cuid())
+  instrumentId          String     @unique
+  instrument            Instrument @relation(fields: [instrumentId], references: [id], onDelete: Cascade)
+  rackCount             Int        @default(1)
+  slotsPerRack          Int        @default(20)
+  statSlots             Int        @default(3)
+  throughputPerHour     Int        @default(100)
+  processingTimeMinMs   Int        @default(4000)
+  processingTimeMaxMs   Int        @default(10000)
+  abnormalRate          Float      @default(0.12)
+  errorRate             Float      @default(0.02)
+  calibrationIntervalMs Int        @default(1800000)
+  createdAt             DateTime   @default(now())
+  updatedAt             DateTime   @updatedAt
+
+  @@index([instrumentId])
+}
+
+model InstrumentTestMapping {
+  id                 String   @id @default(cuid())
+  instrumentId       String
+  internalTestCode   String
+  instrumentTestCode String
+  sampleType         String?
+  specimenCode       String?
+  unit               String?
+  isActive           Boolean  @default(true)
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+
+  instrument Instrument @relation(fields: [instrumentId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+
+  @@index([instrumentId])
+  @@index([internalTestCode])
+  @@index([instrumentTestCode])
+  @@unique([instrumentId, internalTestCode])
+}
+
+model InstrumentOrderOutbox {
+  id            String                 @id @default(cuid())
+  instrumentId  String
+  specimenId    String?
+  orderId       String?
+  messageType   String                 @default("ORDER")
+  payloadJson   Json
+  rawPayload    String?
+  status        InstrumentOutboxStatus @default(PENDING)
+  retryCount    Int                    @default(0)
+  sentAt        DateTime?
+  ackReceivedAt DateTime?
+  errorMessage  String?
+  createdAt     DateTime               @default(now())
+  updatedAt     DateTime               @updatedAt
+
+  instrument Instrument @relation(fields: [instrumentId], references: [id], onDelete: Restrict, onUpdate: Cascade)
+
+  @@index([instrumentId])
+  @@index([status])
+  @@index([specimenId])
+  @@index([orderId])
+  @@index([createdAt])
+}
+
+model InstrumentResultInbox {
+  id                String                        @id @default(cuid())
+  instrumentId      String
+  messageType       String                        @default("RESULT")
+  rawPayload        String
+  parsedPayloadJson Json?
+  sampleId          String?
+  barcode           String?
+  matchingStatus    InstrumentInboxMatchingStatus @default(UNMATCHED)
+  importStatus      InstrumentInboxImportStatus   @default(RECEIVED)
+  receivedAt        DateTime
+  processedAt       DateTime?
+  errorMessage      String?
+  createdAt         DateTime                      @default(now())
+  updatedAt         DateTime                      @updatedAt
+
+  instrument Instrument            @relation(fields: [instrumentId], references: [id], onDelete: Restrict, onUpdate: Cascade)
+  rawResults InstrumentRawResult[]
+
+  @@index([instrumentId])
+  @@index([matchingStatus])
+  @@index([importStatus])
+  @@index([receivedAt])
+  @@index([barcode])
+  @@index([sampleId])
+}
+
+model InstrumentRawResult {
+  id                 String                    @id @default(cuid())
+  instrumentId       String
+  specimenId         String?
+  orderId            String?
+  internalTestCode   String?
+  instrumentTestCode String
+  resultValue        String?
+  resultText         String?
+  unit               String?
+  flagCode           String?
+  deviceStatus       String?
+  resultStatus       InstrumentRawResultStatus @default(RAW_RECEIVED)
+  measuredAt         DateTime?
+  importedAt         DateTime?
+  rawMessageId       String?
+  createdAt          DateTime                  @default(now())
+  updatedAt          DateTime                  @updatedAt
+
+  instrument  Instrument             @relation(fields: [instrumentId], references: [id], onDelete: Restrict, onUpdate: Cascade)
+  rawMessage  InstrumentResultInbox? @relation(fields: [rawMessageId], references: [id], onDelete: SetNull, onUpdate: Cascade)
+
+  @@index([instrumentId])
+  @@index([specimenId])
+  @@index([orderId])
+  @@index([resultStatus])
+  @@index([measuredAt])
+  @@index([rawMessageId])
+}
+
+model InstrumentMessageAudit {
+  id            String   @id @default(cuid())
+  instrumentId  String
+  direction     String
+  messageType   String?
+  transportType String?
+  status        String
+  referenceId   String?
+  detailsJson   Json?
+  createdAt     DateTime @default(now())
+
+  instrument Instrument @relation(fields: [instrumentId], references: [id], onDelete: Restrict, onUpdate: Cascade)
+
+  @@index([instrumentId])
+  @@index([direction])
+  @@index([status])
+  @@index([createdAt])
+  @@index([referenceId])
 }

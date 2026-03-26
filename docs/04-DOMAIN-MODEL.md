@@ -768,11 +768,53 @@ Das Backend muss mindestens diese Domänen logisch unterstützen:
 
 ---
 
+---
+
+## 11. Instrument (Machine Communication)
+
+## Zweck
+Die Instrument-Domäne stellt die Integrationsschicht zwischen dem MLMS und Laboranalysegeräten dar. Sie trennt sauber zwischen Business-Logik und maschinenspezifischen Protokollen.
+
+## Entities
+
+### Instrument
+Stammdaten eines Analysegeräts.
+- `code` — eindeutiger Gerätecode
+- `protocolType` — HL7 | ASTM | VENDOR_CUSTOM | FILE_IMPORT | FILE_EXPORT
+- `transportType` — TCP | SERIAL | FILE_SYSTEM
+- `directionMode` — UNIDIRECTIONAL | BIDIRECTIONAL
+
+### InstrumentConnection
+Technische Verbindungsparameter (Host, Port, Serial, Datei-Pfade, Timeouts, Retry-Limit).
+
+### InstrumentTestMapping
+Mapping zwischen internen Testcodes (MLMS) und maschinenspezifischen Testcodes.
+
+### InstrumentOrderOutbox
+Ausgehende Auftragsqueue an Geräte. Status: PENDING → READY_TO_SEND → SENT → ACK_RECEIVED / FAILED / RETRY_SCHEDULED / CANCELLED.
+
+### InstrumentResultInbox
+Eingehende Nachrichten von Geräten (Rohdaten). matchingStatus: UNMATCHED → MATCHED_BY_SAMPLE_ID / MATCHED_BY_BARCODE / MATCHED_BY_FALLBACK_RULE / AMBIGUOUS / FAILED. importStatus: RECEIVED → PARSED → MATCHED → IMPORTED / PARTIALLY_IMPORTED / ERROR / IGNORED.
+
+### InstrumentRawResult
+Einzelne Rohresultate nach Parsing und Matching. Status: RAW_RECEIVED → MAPPED → PENDING_REVIEW → ACCEPTED_TECHNICALLY / REJECTED_TECHNICALLY → FOR_VALIDATION → VALIDATED.
+
+### InstrumentMessageAudit
+Unveränderlicher Audit-Log aller Kommunikationsschritte (OUTBOUND/INBOUND).
+
+## Regeln
+- Maschinenresultate dürfen niemals automatisch als validierte Laborwerte gelten.
+- Rohpayloads werden niemals gelöscht.
+- Jede Kommunikation erzeugt einen Audit-Eintrag.
+- Neue Geräte und Protokolle werden über den Adapter-Mechanismus ergänzt, ohne Kerncode zu ändern.
+
+---
+
 ## Dinge, die absichtlich noch nicht im MVP sind
 
 Diese Punkte können später ergänzt werden:
 
-- automatische Geräteintegration HL7
+- automatische Geräteintegration HL7 *(Basisarchitektur vorhanden, Protokoll-Adapter ausstehend)*
 - komplexe QC-Module
 - Abrechnung/Insurance
 - Multi-Lab Mandantenfähigkeit
